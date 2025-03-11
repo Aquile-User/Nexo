@@ -1,7 +1,7 @@
 const express = require('express');
 const sequelize = require('./src/config/database');
+const app = require('./app');
 
-const app = express();
 
 // Sincronizamos los modelos con la base de datos
 sequelize.sync()
