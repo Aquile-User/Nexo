@@ -1,5 +1,6 @@
 const bcrypt = require("bcryptjs");
 const Usuario = require("../models/usuario");
+const Rol = require("../models/rol");
 
 // Obtener usuarios, ya sea todos o uno específico por ID
 exports.obtenerUsuarios = async (req, res) => {
@@ -8,7 +9,13 @@ exports.obtenerUsuarios = async (req, res) => {
   try {
     // Si el ID está presente, buscamos un usuario específico
     if (id) {
-      const usuario = await Usuario.findByPk(id);  // findByPk busca por la clave primaria (id)
+      const usuario = await Usuario.findByPk(id, {      
+        include: {
+          model: Rol,
+          as: 'rol',
+          attributes: ['nombre'] // Solo traer el nombre del rol
+        }
+      });  // findByPk busca por la clave primaria (id)
       
       // Si no se encuentra el usuario con ese ID, respondemos con un error
       if (!usuario) {
@@ -20,7 +27,13 @@ exports.obtenerUsuarios = async (req, res) => {
     }
 
     // Si no se proporciona un ID, devolvemos todos los usuarios
-    const usuarios = await Usuario.findAll();
+    const usuarios = await Usuario.findAll({      
+      include: {
+        model: Rol,
+        as: 'rol',
+        attributes: ['nombre'] // Solo traer el nombre del rol
+      }
+    });
     return res.json(usuarios);
 
   } catch (error) {
