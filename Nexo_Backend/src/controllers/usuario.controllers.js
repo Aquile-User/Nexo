@@ -1,13 +1,44 @@
 const bcrypt = require("bcryptjs");
 const Usuario = require("../models/usuario");
+const Rol = require("../models/rol");
 
-// Obtener todos los usuarios
+// Obtener usuarios, ya sea todos o uno específico por ID
 exports.obtenerUsuarios = async (req, res) => {
+  const { id } = req.params;  // Obtenemos el ID de los parámetros de la URL
+
   try {
-    const usuarios = await Usuario.findAll();
-    res.status(200).json(usuarios);
+    // Si el ID está presente, buscamos un usuario específico
+    if (id) {
+      const usuario = await Usuario.findByPk(id, {      
+        include: {
+          model: Rol,
+          as: 'rol',
+          attributes: ['nombre'] // Solo traer el nombre del rol
+        }
+      });  // findByPk busca por la clave primaria (id)
+      
+      // Si no se encuentra el usuario con ese ID, respondemos con un error
+      if (!usuario) {
+        return res.status(404).json({ message: 'Usuario no encontrado' });
+      }
+
+      // Si encontramos el usuario, lo devolvemos
+      return res.json(usuario);
+    }
+
+    // Si no se proporciona un ID, devolvemos todos los usuarios
+    const usuarios = await Usuario.findAll({      
+      include: {
+        model: Rol,
+        as: 'rol',
+        attributes: ['nombre'] // Solo traer el nombre del rol
+      }
+    });
+    return res.json(usuarios);
+
   } catch (error) {
-    res.status(500).json({ error: "Error al obtener usuarios" });
+    console.error(error);
+    return res.status(500).json({ message: 'Hubo un error al obtener los usuarios' });
   }
 };
 
@@ -47,14 +78,14 @@ exports.crearUsuario = async (req, res) => {
 exports.actualizarUsuario = async (req, res) => {
   try {
     const { id } = req.params;
-    const { nombre, correo, estado } = req.body; // `estado` indica si está activo o no
+    const { nombre, correo } = req.body;
 
     const usuario = await Usuario.findByPk(id);
     if (!usuario)
       return res.status(404).json({ error: "Usuario no encontrado" });
 
     // Actualiza solo los campos proporcionados en la solicitud
-    await usuario.update({ nombre, correo, estado });
+    await usuario.update({ nombre, correo });
 
     res.json({ mensaje: "Usuario actualizado correctamente", usuario });
   } catch (error) {
@@ -63,19 +94,25 @@ exports.actualizarUsuario = async (req, res) => {
   }
 };
 
-// Eliminar (deshabilitar) usuario
-exports.eliminarUsuario = async (req, res) => {
+// Cambiar estado del usuario
+exports.estadoUsuario = async (req, res) => {
   try {
     const { id } = req.params;
+    const { estado } = req.body; // `estado` indica si está activo o no
+
     const usuario = await Usuario.findByPk(id);
     if (!usuario)
       return res.status(404).json({ error: "Usuario no encontrado" });
 
-    // Deshabilitar usuario (en lugar de eliminar)
-    await usuario.update({ estado: "deshabilitado" });
-    res.json({ mensaje: "Usuario deshabilitado" });
+    // Actualiza solo el estado del usuario
+    await usuario.update({ estado });
+
+    const mensaje = `Usuario ${estado === "habilitado" ? "habilitado" : "deshabilitado"} correctamente`;
+
+    res.json({ mensaje, usuario });
   } catch (error) {
     console.error(error);
-    res.status(500).json({ error: "Error al deshabilitar usuario" });
+    res.status(500).json({ error: "Error al cambiar estado del usuario" });
   }
 };
+
