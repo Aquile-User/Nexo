@@ -19,9 +19,10 @@ app.use(cors()); // Habilita CORS para todas las rutas
   // Rutas para roles
   app.use("/api/roles", rolesRoutes);
 
-  // Rutas para rutas (Nota: el método debería ser app.use en lugar de app.get)
+  // Rutas para rutas
   app.use("/api/rutas", rutasRoutes);
 
-
+  // Rutas para evaluaciones
+  app.use("/api/evaluaciones", evaluacionRoutes);
 
 module.exports = app; // Exportar la instancia de Express
