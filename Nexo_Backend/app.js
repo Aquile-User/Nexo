@@ -25,4 +25,6 @@ app.use(cors()); // Habilita CORS para todas las rutas
   // Rutas para evaluaciones
   app.use("/api/evaluaciones", evaluacionRoutes);
 
+  // Rutas para asignaciones
+  app.use("/api/asignaciones", asignacionRoutes);
 module.exports = app; // Exportar la instancia de Express
