@@ -27,4 +27,7 @@ app.use(cors()); // Habilita CORS para todas las rutas
 
   // Rutas para asignaciones
   app.use("/api/asignaciones", asignacionRoutes);
+
+  // Rutas para ubicaciones
+  app.use("/api/ubicaciones", ubicacionRoutes);
 module.exports = app; // Exportar la instancia de Express
