@@ -1,5 +1,6 @@
 const { DataTypes } = require("sequelize");
 const sequelize = require("../config/database");
+const Ubicacion = require("./ubicacion");
 
 const Evaluacion = sequelize.define(
   "Evaluacion",
@@ -10,10 +11,6 @@ const Evaluacion = sequelize.define(
       autoIncrement: true,
     },
     ubicacion_id: {
-      type: DataTypes.BIGINT,
-      allowNull: false,
-    },
-    usuario_id: {
       type: DataTypes.BIGINT,
       allowNull: false,
     },
@@ -53,15 +50,9 @@ const Evaluacion = sequelize.define(
   }
 );
 
-Evaluacion.associate = (models) => {
-  Evaluacion.belongsTo(models.Ubicacion, {
-    foreignKey: "ubicacion_id",
-    as: "ubicacion",
-  });
-  Evaluacion.belongsTo(models.Usuario, {
-    foreignKey: "usuario_id",
-    as: "usuario",
-  });
-};
+Evaluacion.belongsTo(Ubicacion, {
+  foreignKey: "ubicacion_id",
+  as: "ubicacion",
+});
 
 module.exports = Evaluacion;

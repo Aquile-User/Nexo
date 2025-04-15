@@ -1,5 +1,6 @@
 const Evaluacion = require("../models/evaluacion");
 const Ubicacion = require("../models/ubicacion");
+const Asignacion = require("../models/asignacion");
 const Usuario = require("../models/usuario");
 
 exports.obtenerEvaluaciones = async (req, res) => {
@@ -21,8 +22,11 @@ exports.obtenerEvaluaciones = async (req, res) => {
             ],
           },
           {
-            model: Usuario,
-            attributes: ["nombre", "apellido", "email"],
+            model: Asignacion,
+            include: [{
+              model: Usuario,
+              attributes: ["nombre", "apellido", "email"],
+            }],
           },
         ],
       });
@@ -48,8 +52,11 @@ exports.obtenerEvaluaciones = async (req, res) => {
           ],
         },
         {
-          model: Usuario,
-          attributes: ["nombre", "apellido", "email"],
+          model: Asignacion,
+          include: [{
+            model: Usuario,
+            attributes: ["nombre", "apellido", "email"],
+          }],
         },
       ],
     });
@@ -62,49 +69,39 @@ exports.obtenerEvaluaciones = async (req, res) => {
 };
 
 exports.crearEvaluacion = async (req, res) => {
-  const { ubicacion_id, usuario_id, fecha_programada, tipo, comentarios } =
-    req.body;
+  const { ubicacion_id, fecha_programada, tipo, comentarios } = req.body;
 
   try {
-    if (!ubicacion_id || !usuario_id || !fecha_programada || !tipo) {
+    if (!ubicacion_id || !fecha_programada || !tipo) {
       return res.status(400).json({
-        error:
-          "Faltan datos necesarios (ubicacion_id, usuario_id, fecha_programada, tipo)",
+        error: "Faltan datos necesarios (ubicacion_id, fecha_programada, tipo)",
       });
     }
 
     const evaluacion = await Evaluacion.create({
       ubicacion_id,
-      usuario_id,
       fecha_programada,
       tipo,
       comentarios,
       estado: "pendiente",
     });
 
-    const evaluacionCreada = await Evaluacion.findByPk(
-      evaluacion.evaluacion_id,
-      {
-        include: [
-          {
-            model: Ubicacion,
-            attributes: [
-              "nombre",
-              "direccion",
-              "coordenada",
-              "provincia",
-              "municipio",
-              "sector",
-              "estado",
-            ],
-          },
-          {
-            model: Usuario,
-            attributes: ["nombre", "apellido", "email"],
-          },
-        ],
-      }
-    );
+    const evaluacionCreada = await Evaluacion.findByPk(evaluacion.evaluacion_id, {
+      include: [
+        {
+          model: Ubicacion,
+          attributes: [
+            "nombre",
+            "direccion",
+            "coordenada",
+            "provincia",
+            "municipio",
+            "sector",
+            "estado",
+          ],
+        },
+      ],
+    });
 
     res.status(201).json({
       mensaje: "Evaluación creada exitosamente",
@@ -149,19 +146,14 @@ exports.actualizarEvaluacion = async (req, res) => {
       include: [
         {
           model: Ubicacion,
-          attributes: [
-            "nombre",
-            "direccion",
-            "coordenada",
-            "provincia",
-            "municipio",
-            "sector",
-            "estado",
-          ],
+          attributes: ["nombre", "direccion", "coordenada", "provincia", "municipio", "sector", "estado"],
         },
         {
-          model: Usuario,
-          attributes: ["nombre", "apellido", "email"],
+          model: Asignacion,
+          include: [{
+            model: Usuario,
+            attributes: ["nombre", "apellido", "email"],
+          }],
         },
       ],
     });
@@ -218,19 +210,14 @@ exports.cancelarEvaluacion = async (req, res) => {
       include: [
         {
           model: Ubicacion,
-          attributes: [
-            "nombre",
-            "direccion",
-            "coordenada",
-            "provincia",
-            "municipio",
-            "sector",
-            "estado",
-          ],
+          attributes: ["nombre", "direccion", "coordenada", "provincia", "municipio", "sector", "estado"],
         },
         {
-          model: Usuario,
-          attributes: ["nombre", "apellido", "email"],
+          model: Asignacion,
+          include: [{
+            model: Usuario,
+            attributes: ["nombre", "apellido", "email"],
+          }],
         },
       ],
     });
