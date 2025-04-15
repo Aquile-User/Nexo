@@ -21,6 +21,7 @@ app.use(
 ); // Habilita CORS para todas las rutas
 
 // Rutas
+
 // Rutas para usuarios
 app.use("/api/usuarios", usuarioRoutes);
 

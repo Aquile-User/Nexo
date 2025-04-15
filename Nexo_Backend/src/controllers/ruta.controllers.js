@@ -91,12 +91,14 @@ exports.modificarRuta = async (req, res) => {
   }
 };
 
+
 exports.eliminarRuta = async (req, res) => {
   const { id } = req.params;
   try {
     const Ruta = await Ruta.findByPk(id);
     if (!Ruta) return res.status(404).json({ error: "Ruta no encontrada" });
     await Ruta.destroy();
+
     res.json({ mensaje: "Ruta eliminada exitosamente" });
   } catch (error) {
     console.error(error);
