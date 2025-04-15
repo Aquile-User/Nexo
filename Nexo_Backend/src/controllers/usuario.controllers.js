@@ -51,11 +51,9 @@ exports.crearUsuario = async (req, res) => {
 
     // Validación
     if (!nombre || !correo || !password_hash || !rol_id) {
-      return res
-        .status(400)
-        .json({
-          error: "Faltan datos necesarios (nombre, correo, password, rol)",
-        });
+      return res.status(400).json({
+        error: "Faltan datos necesarios (nombre, correo, password, rol)",
+      });
     }
 
     // Cifrar la contraseña
@@ -168,6 +166,7 @@ exports.login = async (req, res) => {
         id: usuario.usuario_id,
         email: usuario.correo,
         rol: usuario.rol.nombre,
+        coordenada: datosGeocodificacion.coordenada,
       },
       process.env.JWT_SECRET || "tu_secreto_jwt",
       { expiresIn: "24h" }
