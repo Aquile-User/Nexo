@@ -32,10 +32,6 @@ body {
   overflow: hidden;
 }
 
-@import './variables.css';
-
-/* Base styles permanecen igual hasta .decorative-element */
-
 .decorative-element {
   position: absolute;
   right: 0;
