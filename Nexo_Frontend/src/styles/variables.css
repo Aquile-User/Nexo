@@ -1,0 +1,13 @@
+:root {
+  --primary-color: #4A4AFF;        /* Azul eléctrico más vibrante */
+  --primary-hover: #3939CC;        /* Versión más oscura para hover */
+  --text-color: #2D2D2D;           /* Gris oscuro, casi negro */
+  --text-light: #6B6B6B;           /* Gris medio, ideal para textos secundarios */
+  --error-color: #FF4C4C;          /* Rojo controlado para errores */
+  --border-color: #D1D1D1;         /* Gris claro para bordes */
+  --background-color: #F5F5F7;     /* Fondo general, gris muy claro */
+  --accent-color: #FF6B6B;         /* Coral rojizo que complementa el azul */
+  --dark-bg: #1E1E1E;              /* Fondo oscuro alternativo */
+  --white: #FFFFFF;                /* Blanco puro */
+  --transition: all 0.2s ease-in-out;
+}
