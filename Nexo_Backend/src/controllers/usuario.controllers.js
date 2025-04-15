@@ -1,25 +1,26 @@
 const bcrypt = require("bcryptjs");
+const jwt = require("jsonwebtoken");
 const Usuario = require("../models/usuario");
 const Rol = require("../models/rol");
 
 // Obtener usuarios, ya sea todos o uno específico por ID
 exports.obtenerUsuarios = async (req, res) => {
-  const { id } = req.params;  // Obtenemos el ID de los parámetros de la URL
+  const { id } = req.params; // Obtenemos el ID de los parámetros de la URL
 
   try {
     // Si el ID está presente, buscamos un usuario específico
     if (id) {
-      const usuario = await Usuario.findByPk(id, {      
+      const usuario = await Usuario.findByPk(id, {
         include: {
           model: Rol,
-          as: 'rol',
-          attributes: ['nombre'] // Solo traer el nombre del rol
-        }
-      });  // findByPk busca por la clave primaria (id)
-      
+          as: "rol",
+          attributes: ["nombre"], // Solo traer el nombre del rol
+        },
+      }); // findByPk busca por la clave primaria (id)
+
       // Si no se encuentra el usuario con ese ID, respondemos con un error
       if (!usuario) {
-        return res.status(404).json({ message: 'Usuario no encontrado' });
+        return res.status(404).json({ message: "Usuario no encontrado" });
       }
 
       // Si encontramos el usuario, lo devolvemos
@@ -27,18 +28,19 @@ exports.obtenerUsuarios = async (req, res) => {
     }
 
     // Si no se proporciona un ID, devolvemos todos los usuarios
-    const usuarios = await Usuario.findAll({      
+    const usuarios = await Usuario.findAll({
       include: {
         model: Rol,
-        as: 'rol',
-        attributes: ['nombre'] // Solo traer el nombre del rol
-      }
+        as: "rol",
+        attributes: ["nombre"], // Solo traer el nombre del rol
+      },
     });
     return res.json(usuarios);
-
   } catch (error) {
     console.error(error);
-    return res.status(500).json({ message: 'Hubo un error al obtener los usuarios' });
+    return res
+      .status(500)
+      .json({ message: "Hubo un error al obtener los usuarios" });
   }
 };
 
@@ -51,7 +53,9 @@ exports.crearUsuario = async (req, res) => {
     if (!nombre || !correo || !password_hash || !rol_id) {
       return res
         .status(400)
-        .json({ error: "Faltan datos necesarios (nombre, correo, password, rol)" });
+        .json({
+          error: "Faltan datos necesarios (nombre, correo, password, rol)",
+        });
     }
 
     // Cifrar la contraseña
@@ -107,7 +111,9 @@ exports.estadoUsuario = async (req, res) => {
     // Actualiza solo el estado del usuario
     await usuario.update({ estado });
 
-    const mensaje = `Usuario ${estado === "habilitado" ? "habilitado" : "deshabilitado"} correctamente`;
+    const mensaje = `Usuario ${
+      estado === "habilitado" ? "habilitado" : "deshabilitado"
+    } correctamente`;
 
     res.json({ mensaje, usuario });
   } catch (error) {
@@ -116,3 +122,69 @@ exports.estadoUsuario = async (req, res) => {
   }
 };
 
+// Login de usuario
+exports.login = async (req, res) => {
+  try {
+    const { email, password } = req.body;
+
+    // Validación
+    if (!email || !password) {
+      return res
+        .status(400)
+        .json({ error: "Email y contraseña son requeridos" });
+    }
+
+    // Buscar usuario por email
+    const usuario = await Usuario.findOne({
+      where: { correo: email },
+      include: {
+        model: Rol,
+        as: "rol",
+        attributes: ["nombre"],
+      },
+    });
+
+    if (!usuario) {
+      return res.status(401).json({ error: "Credenciales inválidas" });
+    }
+
+    // Verificar contraseña
+    const isPasswordValid = await bcrypt.compare(
+      password,
+      usuario.password_hash
+    );
+    if (!isPasswordValid) {
+      return res.status(401).json({ error: "Credenciales inválidas" });
+    }
+
+    // Verificar estado del usuario
+    if (usuario.estado !== "habilitado") {
+      return res.status(401).json({ error: "Usuario deshabilitado" });
+    }
+
+    // Generar token JWT
+    const token = jwt.sign(
+      {
+        id: usuario.usuario_id,
+        email: usuario.correo,
+        rol: usuario.rol.nombre,
+      },
+      process.env.JWT_SECRET || "tu_secreto_jwt",
+      { expiresIn: "24h" }
+    );
+
+    // Devolver respuesta
+    res.json({
+      token,
+      user: {
+        id: usuario.usuario_id,
+        email: usuario.correo,
+        nombre: usuario.nombre,
+        rol: usuario.rol.nombre,
+      },
+    });
+  } catch (error) {
+    console.error(error);
+    res.status(500).json({ error: "Error al iniciar sesión" });
+  }
+};
