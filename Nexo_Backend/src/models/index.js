@@ -1,45 +1,77 @@
-const Ruta = require('./ruta');
-const Evaluacion = require('./evaluacion');
-const Ubicacion = require('./ubicacion');
-const Asignacion = require('./asignacion');
-const Usuario = require('./usuario');
-const RutaUbicacion = require('./ruta_ubicaciones');
+const Ruta = require("./ruta");
+const Evaluacion = require("./evaluacion");
+const Ubicacion = require("./ubicacion");
+const Asignacion = require("./asignacion");
+const Usuario = require("./usuario");
+const RutaUbicacion = require("./ruta_ubicaciones");
+const Rol = require("./rol");
 
-// Relación entre Ruta y RutaUbicacion
-Ruta.belongsToMany(Ubicacion, {
-  through: RutaUbicacion,
-  foreignKey: 'ruta_id',
-  otherKey: 'ubicacion_id',
+// Relación entre Usuario y Rol (cambiando el alias para evitar duplicados)
+Usuario.belongsTo(Rol, {
+  foreignKey: "rol_id",
+  as: "rolUsuario",
 });
 
-// Relación entre Ubicacion y RutaUbicacion
-Ubicacion.belongsToMany(Ruta, {
-  through: RutaUbicacion,
-  foreignKey: 'ubicacion_id',
-  otherKey: 'ruta_id',
+Rol.hasMany(Usuario, {
+  foreignKey: "rol_id",
+  as: "usuarios",
 });
 
-// Relación Evaluacion - Ubicacion
+// Relación entre Evaluacion y Ubicacion
 Evaluacion.belongsTo(Ubicacion, {
   foreignKey: "ubicacion_id",
   as: "ubicacion",
 });
 
-// Relación Evaluacion - Asignacion
-Evaluacion.hasMany(Asignacion, {
-  foreignKey: 'evaluacion_id',
-  as: 'asignaciones'
+Ubicacion.hasMany(Evaluacion, {
+  foreignKey: "ubicacion_id",
+  as: "evaluaciones",
+});
+
+// Relaciones de Asignacion
+Asignacion.belongsTo(Usuario, {
+  foreignKey: "usuario_id",
+  as: "usuario",
 });
 
 Asignacion.belongsTo(Evaluacion, {
-  foreignKey: 'evaluacion_id',
-  as: 'evaluacion'
+  foreignKey: "evaluacion_id",
+  as: "evaluacion",
 });
 
-// Relación Asignacion - Usuario
-Asignacion.belongsTo(Usuario, {
-  foreignKey: 'usuario_id',
-  as: 'usuario'
+Asignacion.belongsTo(Ruta, {
+  foreignKey: "ruta_id",
+  as: "ruta",
+});
+
+Usuario.hasMany(Asignacion, {
+  foreignKey: "usuario_id",
+  as: "asignaciones",
+});
+
+Evaluacion.hasMany(Asignacion, {
+  foreignKey: "evaluacion_id",
+  as: "asignaciones",
+});
+
+Ruta.hasMany(Asignacion, {
+  foreignKey: "ruta_id",
+  as: "asignaciones",
+});
+
+// Relación entre Ruta y Ubicacion (muchos a muchos)
+Ruta.belongsToMany(Ubicacion, {
+  through: RutaUbicacion,
+  foreignKey: "ruta_id",
+  otherKey: "ubicacion_id",
+  as: "ubicacionesRuta",
+});
+
+Ubicacion.belongsToMany(Ruta, {
+  through: RutaUbicacion,
+  foreignKey: "ubicacion_id",
+  otherKey: "ruta_id",
+  as: "rutasUbicacion",
 });
 
 module.exports = {
@@ -48,5 +80,6 @@ module.exports = {
   Ubicacion,
   Asignacion,
   Usuario,
-  RutaUbicacion
+  RutaUbicacion,
+  Rol,
 };

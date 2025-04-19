@@ -2,6 +2,7 @@ const Ubicacion = require("../models/ubicacion");
 const Evaluacion = require("../models/evaluacion");
 const { Op } = require("sequelize");
 const axios = require("axios");
+const sequelize = require("../config/database");
 
 const obtenerDatosGeocodificacion = async (direccion) => {
   try {
@@ -13,11 +14,13 @@ const obtenerDatosGeocodificacion = async (direccion) => {
       headers: {
         "User-Agent": "NexoApp/1.0",
       },
-      timeout: 5000
+      timeout: 5000,
     });
 
     if (!response.data || response.data.length === 0) {
-      throw new Error("No se encontraron resultados para la dirección proporcionada");
+      throw new Error(
+        "No se encontraron resultados para la dirección proporcionada"
+      );
     }
 
     const result = response.data[0];
@@ -25,10 +28,10 @@ const obtenerDatosGeocodificacion = async (direccion) => {
 
     return {
       coordenada: `POINT(${result.lon} ${result.lat})`,
-      provincia: address.state || address.county || address.region || '',
-      municipio: address.city || address.town || address.municipality || '',
-      sector: address.suburb || address.neighbourhood || '',
-      codigo_postal: address.postcode || '',
+      provincia: address.state || address.county || address.region || "",
+      municipio: address.city || address.town || address.municipality || "",
+      sector: address.suburb || address.neighbourhood || "",
+      codigo: address.postcode || "",
       direccion_formateada: result.display_name,
     };
   } catch (error) {
@@ -38,23 +41,36 @@ const obtenerDatosGeocodificacion = async (direccion) => {
 };
 
 // Al inicio del archivo, después de los requires
-const TIPOS_UBICACION_PERMITIDOS = ['comercial', 'residencial', 'industrial', 'otro'];
+const TIPOS_UBICACION_PERMITIDOS = [
+  "comercial",
+  "residencial",
+  "industrial",
+  "otro",
+];
 const REGEX_TELEFONO = /^\+1809\d{7}$/;
 
 exports.crearUbicacion = async (req, res) => {
-  const { nombre, direccion, tipo_ubicacion, telefono, email_contacto, horario_atencion, referencia } = req.body;
+  const {
+    nombre,
+    direccion,
+    tipo_ubicacion,
+    telefono,
+    email_contacto,
+    horario_atencion,
+    referencia,
+  } = req.body;
 
   try {
     // Validaciones básicas
     if (!TIPOS_UBICACION_PERMITIDOS.includes(tipo_ubicacion)) {
       return res.status(400).json({
-        error: "Tipo de ubicación no válido"
+        error: "Tipo de ubicación no válido",
       });
     }
 
     if (telefono && !REGEX_TELEFONO.test(telefono)) {
       return res.status(400).json({
-        error: "Formato de teléfono inválido. Debe ser +1809XXXXXXX"
+        error: "Formato de teléfono inválido. Debe ser +1809XXXXXXX",
       });
     }
 
@@ -62,61 +78,65 @@ exports.crearUbicacion = async (req, res) => {
     const ubicacionExistente = await Ubicacion.findOne({ where: { nombre } });
     if (ubicacionExistente) {
       return res.status(400).json({
-        error: "Ya existe una ubicación con este nombre"
+        error: "Ya existe una ubicación con este nombre",
       });
     }
 
+    // Obtener datos de geocodificación
     const datosGeocodificacion = await obtenerDatosGeocodificacion(direccion);
 
+    // Crear la ubicación con el punto geométrico correctamente formateado
     const ubicacion = await Ubicacion.create({
       nombre,
       tipo_ubicacion,
       direccion: datosGeocodificacion.direccion_formateada,
-      coordenada: datosGeocodificacion.coordenada,
+      coordenada: sequelize.fn('ST_GeomFromText', 'POINT(-69.931051 18.481540)', 4326),
       provincia: datosGeocodificacion.provincia,
       municipio: datosGeocodificacion.municipio,
       sector: datosGeocodificacion.sector,
-      codigo_postal: datosGeocodificacion.codigo_postal,
+      codigo: datosGeocodificacion.codigo || null,
       telefono,
       email_contacto,
       horario_atencion,
-      referencia
+      referencia,
     });
 
     res.status(201).json({
       mensaje: "Ubicación creada exitosamente",
-      ubicacion
+      ubicacion,
     });
   } catch (error) {
     console.error(error);
     res.status(500).json({
       error: "Error al crear ubicación",
-      detalles: error.message
+      detalles: error.message,
     });
   }
 };
 
 exports.obtenerUbicaciones = async (req, res) => {
   try {
-    const { 
-      id, 
-      provincia, 
-      municipio, 
-      tipo, 
+    const {
+      id,
+      provincia,
+      municipio,
+      tipo,
       activo,
       busqueda,
       page = 1,
-      limit = 10
+      limit = 10,
     } = req.query;
 
     if (id) {
       const ubicacion = await Ubicacion.findByPk(id, {
-        include: [{
-          model: Evaluacion,
-          attributes: ['evaluacion_id', 'fecha_programada', 'estado']
-        }]
+        include: [
+          {
+            model: Evaluacion,
+            attributes: ["evaluacion_id", "fecha_programada", "estado"],
+          },
+        ],
       });
-      
+
       if (!ubicacion) {
         return res.status(404).json({ error: "Ubicación no encontrada" });
       }
@@ -124,7 +144,7 @@ exports.obtenerUbicaciones = async (req, res) => {
     }
 
     const where = {};
-    
+
     if (provincia) where.provincia = provincia;
     if (municipio) where.municipio = municipio;
     if (tipo) where.tipo_ubicacion = tipo;
@@ -132,7 +152,7 @@ exports.obtenerUbicaciones = async (req, res) => {
     if (busqueda) {
       where[Op.or] = [
         { nombre: { [Op.like]: `%${busqueda}%` } },
-        { direccion: { [Op.like]: `%${busqueda}%` } }
+        { direccion: { [Op.like]: `%${busqueda}%` } },
       ];
     }
 
@@ -142,14 +162,14 @@ exports.obtenerUbicaciones = async (req, res) => {
       where,
       limit,
       offset,
-      order: [['nombre', 'ASC']],
+      order: [["nombre", "ASC"]],
     });
 
     return res.json({
       total: count,
       paginas: Math.ceil(count / limit),
       pagina_actual: page,
-      ubicaciones: rows
+      ubicaciones: rows,
     });
   } catch (error) {
     console.error(error);
@@ -159,15 +179,15 @@ exports.obtenerUbicaciones = async (req, res) => {
 
 exports.actualizarUbicacion = async (req, res) => {
   const { id } = req.params;
-  const { 
-    nombre, 
-    direccion, 
-    tipo_ubicacion, 
-    telefono, 
-    email_contacto, 
-    horario_atencion, 
+  const {
+    nombre,
+    direccion,
+    tipo_ubicacion,
+    telefono,
+    email_contacto,
+    horario_atencion,
     referencia,
-    activo 
+    activo,
   } = req.body;
 
   try {
@@ -183,7 +203,7 @@ exports.actualizarUbicacion = async (req, res) => {
       email_contacto,
       horario_atencion,
       referencia,
-      activo
+      activo,
     };
 
     if (direccion) {
@@ -191,11 +211,11 @@ exports.actualizarUbicacion = async (req, res) => {
       datosActualizacion = {
         ...datosActualizacion,
         direccion: datosGeocodificacion.direccion_formateada,
-        coordenada: datosGeocodificacion.coordenada,
+        coordenada: sequelize.fn('ST_GeomFromText', datosGeocodificacion.coordenada),
         provincia: datosGeocodificacion.provincia,
         municipio: datosGeocodificacion.municipio,
         sector: datosGeocodificacion.sector,
-        codigo_postal: datosGeocodificacion.codigo_postal
+        codigo: datosGeocodificacion.codigo,
       };
     }
 
@@ -203,13 +223,13 @@ exports.actualizarUbicacion = async (req, res) => {
 
     res.json({
       mensaje: "Ubicación actualizada exitosamente",
-      ubicacion: await Ubicacion.findByPk(id)
+      ubicacion: await Ubicacion.findByPk(id),
     });
   } catch (error) {
     console.error(error);
     res.status(500).json({
       error: "Error al actualizar ubicación",
-      detalles: error.message
+      detalles: error.message,
     });
   }
 };
@@ -225,8 +245,9 @@ exports.eliminarUbicacion = async (req, res) => {
 
     const puedeEliminar = await ubicacion.puedeSerEliminada();
     if (!puedeEliminar) {
-      return res.status(400).json({ 
-        error: "No se puede eliminar la ubicación porque tiene evaluaciones asociadas" 
+      return res.status(400).json({
+        error:
+          "No se puede eliminar la ubicación porque tiene evaluaciones asociadas",
       });
     }
 
@@ -249,19 +270,24 @@ exports.buscarPorCoordenadas = async (req, res) => {
           POINT(${parseFloat(lon)}, ${parseFloat(lat)})
         ) <= ${radio * 1000}
       `),
-      order: [[sequelize.literal(`
+      order: [
+        [
+          sequelize.literal(`
         ST_Distance_Sphere(
           coordenada,
           POINT(${parseFloat(lon)}, ${parseFloat(lat)})
         )
-      `), 'ASC']]
+      `),
+          "ASC",
+        ],
+      ],
     });
 
     res.json(ubicaciones);
   } catch (error) {
     console.error(error);
-    res.status(500).json({ 
-      error: "Error al buscar ubicaciones por coordenadas" 
+    res.status(500).json({
+      error: "Error al buscar ubicaciones por coordenadas",
     });
   }
 };
@@ -290,6 +316,6 @@ exports.geocodificarDireccion = async (req, res) => {
 // Agregar al final del archivo
 exports.obtenerTiposUbicacion = async (req, res) => {
   res.json({
-    tipos: TIPOS_UBICACION_PERMITIDOS
+    tipos: TIPOS_UBICACION_PERMITIDOS,
   });
 };

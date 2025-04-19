@@ -1,0 +1,215 @@
+.page-wrapper {
+  padding: 2rem;
+  min-height: 100vh;
+  width: 100%;
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  background-color: var(--background-color);
+}
+
+.content-wrapper {
+  width: 100%;
+  max-width: 1400px;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+}
+
+.evaluaciones-container {
+  width: 95%;
+  padding: 2rem;
+  background-color: var(--white);
+  border-radius: 12px;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+}
+
+.page-title {
+  color: var(--primary-color);
+  margin-bottom: 2rem !important;
+  font-weight: 600 !important;
+  text-align: center;
+}
+
+.datagrid-container {
+  width: 100%;
+  height: 600px;
+  display: flex;
+  justify-content: center;
+}
+
+.evaluaciones-grid {
+  width: 100%;
+  background-color: var(--white);
+  border-radius: 8px;
+  box-shadow: 0 2px 4px rgba(0, 0, 0, 0.05);
+}
+
+.evaluaciones-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  margin-bottom: 2rem;
+}
+
+.filtros {
+  display: flex;
+  gap: 1rem;
+}
+
+.evaluacion-card {
+  background: var(--white);
+  border-radius: 0.75rem;
+  padding: 1.5rem;
+  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.1);
+}
+
+.evaluacion-header {
+  display: flex;
+  justify-content: space-between;
+  margin-bottom: 1rem;
+}
+
+.estado {
+  padding: 0.25rem 0.75rem;
+  border-radius: 1rem;
+  font-size: 0.875rem;
+}
+
+.estado.pendiente {
+  background: #fff3dc;
+  color: #ffb200;
+}
+.estado.en_progreso {
+  background: #e8f5ff;
+  color: #0098ff;
+}
+.estado.completada {
+  background: #e6ffe6;
+  color: #00b300;
+}
+.estado.cancelada {
+  background: #ffe6e6;
+  color: #ff0000;
+}
+
+.evaluacion-body {
+  margin-bottom: 1rem;
+}
+
+.evaluacion-footer {
+  display: flex;
+  gap: 1rem;
+}
+
+.btn-accion {
+  padding: 0.5rem 1rem;
+  border: none;
+  border-radius: 0.5rem;
+  background: var(--primary-color);
+  color: white;
+  cursor: pointer;
+}
+
+/* Personalización del DataGrid */
+.MuiDataGrid-root {
+  border: none !important;
+}
+
+/* Estilo para los encabezados */
+.MuiDataGrid-columnHeader {
+  background-color: #f5f5f5 !important;
+  font-weight: bold !important;
+}
+
+/* Estilo para las filas al pasar el mouse */
+.MuiDataGrid-row:hover {
+  background-color: rgba(0, 0, 0, 0.04) !important;
+}
+
+/* Estilos para los chips de estado */
+.MuiChip-root.estado-completada {
+  border-color: #4caf50;
+  color: #4caf50;
+}
+
+.MuiChip-root.estado-pendiente {
+  border-color: #ff9800;
+  color: #ff9800;
+}
+
+.MuiChip-root.estado-cancelada {
+  border-color: #f44336;
+  color: #f44336;
+}
+
+/* Estilos para los chips de estado */
+.estado-completada {
+  background-color: #e8f5e9 !important;
+  color: #2e7d32 !important;
+}
+
+.estado-pendiente {
+  background-color: #fff3e0 !important;
+  color: #f57c00 !important;
+}
+
+.estado-cancelada {
+  background-color: #ffebee !important;
+  color: #d32f2f !important;
+}
+
+/* Estilos para la barra de herramientas */
+.MuiDataGrid-toolbarContainer {
+  padding: 8px 16px !important;
+  border-bottom: 1px solid rgba(224, 224, 224, 1);
+}
+
+/* Estilos para los botones de la barra de herramientas */
+.MuiButton-root {
+  text-transform: none !important;
+}
+
+/* Estilos para el paginador */
+.MuiDataGrid-footerContainer {
+  border-top: 1px solid rgba(224, 224, 224, 1) !important;
+}
+
+.MuiTablePagination-root {
+  justify-content: center;
+}
+
+/* Ajuste para el contenedor principal */
+.evaluaciones-page {
+  width: 100%;
+  max-width: 1600px;
+  margin: 0 auto;
+  padding: 24px;
+}
+
+/* Responsive */
+@media (max-width: 768px) {
+  .page-wrapper {
+    padding: 1rem;
+  }
+
+  .evaluaciones-container {
+    padding: 1rem;
+    width: 100%;
+  }
+
+  .page-title {
+    font-size: 1.5rem !important;
+  }
+}
+
+/* Animación de carga */
+.MuiDataGrid-loadingOverlay {
+  background-color: rgba(255, 255, 255, 0.8);
+  backdrop-filter: blur(4px);
+  display: flex;
+  justify-content: center;
+  align-items: center;
+}
