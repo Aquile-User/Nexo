@@ -1,11 +1,4 @@
-:root {
-  --primary-color: #0a2640;
-  --secondary-color: #083250;
-  --text-color: #333333;
-  --light-gray: #f5f5f5;
-  --border-radius: 8px;
-  --error-color: #dc3545;
-}
+@import "./variables.css";
 
 * {
   margin: 0;

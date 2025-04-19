@@ -1,4 +1,4 @@
-@import './variables.css';
+@import "./variables.css";
 
 html,
 body,
@@ -38,7 +38,11 @@ body {
   top: 0;
   width: 50%;
   height: 100%;
-  background: linear-gradient(135deg, var(--primary-color) 0%, var(--primary-hover) 100%);
+  background: linear-gradient(
+    135deg,
+    var(--primary-color) 0%,
+    var(--primary-hover) 100%
+  );
   clip-path: polygon(15% 0%, 100% 0%, 100% 100%, 0% 100%);
   z-index: 0;
   display: flex;
@@ -309,7 +313,7 @@ body {
 .sign-in-button {
   width: 100%;
   padding: 1.25rem;
-  background-color: #0C1F1F;
+  background-color: #0c1f1f;
   color: var(--accent-color);
   border: none;
   border-radius: 0.75rem;
@@ -368,7 +372,7 @@ body {
 .sign-in-button {
   width: 100%;
   padding: 1.25rem;
-  background-color: #0C1F1F;
+  background-color: #0c1f1f;
   color: var(--accent-color);
   border: none;
   border-radius: 0.75rem;
@@ -431,19 +435,21 @@ body {
 }
 
 @media (max-width: 976px) {
-  
-  .login-container{
+  .login-container {
     padding-left: 1rem;
   }
 }
-
 
 .page-wrapper {
   background-color: var(--background-color);
 }
 
 .decorative-element {
-  background: linear-gradient(135deg, var(--primary-color) 0%, var(--primary-hover) 100%);
+  background: linear-gradient(
+    135deg,
+    var(--primary-color) 0%,
+    var(--primary-hover) 100%
+  );
 }
 
 .decorative-overlay {
