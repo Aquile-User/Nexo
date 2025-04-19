@@ -13,7 +13,7 @@ exports.obtenerUsuarios = async (req, res) => {
       const usuario = await Usuario.findByPk(id, {
         include: {
           model: Rol,
-          as: "rol",
+          as: "rolUsuario",
           attributes: ["nombre"], // Solo traer el nombre del rol
         },
       }); // findByPk busca por la clave primaria (id)
@@ -31,7 +31,7 @@ exports.obtenerUsuarios = async (req, res) => {
     const usuarios = await Usuario.findAll({
       include: {
         model: Rol,
-        as: "rol",
+        as: "rolUsuario",
         attributes: ["nombre"], // Solo traer el nombre del rol
       },
     });
@@ -51,11 +51,9 @@ exports.crearUsuario = async (req, res) => {
 
     // Validación
     if (!nombre || !correo || !password_hash || !rol_id) {
-      return res
-        .status(400)
-        .json({
-          error: "Faltan datos necesarios (nombre, correo, password, rol)",
-        });
+      return res.status(400).json({
+        error: "Faltan datos necesarios (nombre, correo, password, rol)",
+      });
     }
 
     // Cifrar la contraseña
@@ -139,7 +137,7 @@ exports.login = async (req, res) => {
       where: { correo: email },
       include: {
         model: Rol,
-        as: "rol",
+        as: "rolUsuario",
         attributes: ["nombre"],
       },
     });
@@ -167,7 +165,7 @@ exports.login = async (req, res) => {
       {
         id: usuario.usuario_id,
         email: usuario.correo,
-        rol: usuario.rol.nombre,
+        rol: usuario.rolUsuario.nombre,
       },
       process.env.JWT_SECRET || "tu_secreto_jwt",
       { expiresIn: "24h" }
@@ -180,7 +178,7 @@ exports.login = async (req, res) => {
         id: usuario.usuario_id,
         email: usuario.correo,
         nombre: usuario.nombre,
-        rol: usuario.rol.nombre,
+        rol: usuario.rolUsuario.nombre,
       },
     });
   } catch (error) {
