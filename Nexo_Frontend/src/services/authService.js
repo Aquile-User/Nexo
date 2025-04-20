@@ -8,13 +8,9 @@ const authService = {
         password,
       });
 
-      console.log("Respuesta completa del login:", response);
-      console.log("Datos del usuario:", response.data);
-
       if (response.data.token) {
-        // Guardar los datos del usuario que vienen en la respuesta
         localStorage.setItem("user", JSON.stringify(response.data));
-        console.log("Usuario guardado en localStorage:", response.data);
+        localStorage.setItem("token", response.data.token);
       }
 
       return response.data;
@@ -25,15 +21,29 @@ const authService = {
 
   logout() {
     localStorage.removeItem("user");
+    localStorage.removeItem("token");
   },
 
   getCurrentUser() {
     const userStr = localStorage.getItem("user");
-    console.log("Usuario recuperado de localStorage:", userStr);
-    const user = userStr ? JSON.parse(userStr) : null;
-    console.log("Usuario parseado:", user);
-    return user;
+    return userStr ? JSON.parse(userStr) : null;
   },
+};
+
+export const getCurrentUserProfile = async () => {
+  try {
+    const token = localStorage.getItem("token");
+    const response = await api.get("/usuarios/perfil", {
+      headers: {
+        Authorization: `Bearer ${token}`,
+      },
+    });
+
+    return response.data;
+  } catch (error) {
+    console.error("Error:", error);
+    throw error;
+  }
 };
 
 export default authService;
