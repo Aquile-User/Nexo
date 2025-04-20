@@ -186,3 +186,31 @@ exports.login = async (req, res) => {
     res.status(500).json({ error: "Error al iniciar sesión" });
   }
 };
+
+// Obtener perfil del usuario
+exports.getProfile = async (req, res) => {
+  try {
+    const userId = req.user.id || req.user.usuario_id; // Intentar ambos campos
+
+    const usuario = await Usuario.findOne({
+      where: { usuario_id: userId },
+      include: [
+        {
+          model: Rol,
+          as: "rolUsuario",
+          attributes: ["nombre"],
+        },
+      ],
+      attributes: { exclude: ["password_hash"] },
+    });
+
+    if (!usuario) {
+      return res.status(404).json({ message: "Usuario no encontrado" });
+    }
+
+    res.json(usuario);
+  } catch (error) {
+    console.error(error);
+    res.status(500).json({ message: "Error al obtener el perfil del usuario" });
+  }
+};

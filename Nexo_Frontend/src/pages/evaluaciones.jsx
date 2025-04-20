@@ -149,49 +149,45 @@ function Evaluaciones() {
 
   if (loading) {
     return (
-      <Box className="page-wrapper">
-        <Box className="content-wrapper">
-          <Paper elevation={3} className="evaluaciones-container">
-            <Box display="flex" justifyContent="center" alignItems="center" minHeight="400px">
-              <CircularProgress />
-            </Box>
-          </Paper>
-        </Box>
+      <Box className="content-wrapper">
+        <Paper elevation={3} className="evaluaciones-container">
+          <Box display="flex" justifyContent="center" alignItems="center" minHeight="400px">
+            <CircularProgress />
+          </Box>
+        </Paper>
       </Box>
     );
   }
 
   return (
-    <Box className="page-wrapper">
-      <Box className="content-wrapper">
-        <Paper elevation={3} className="evaluaciones-container">
-          <Typography variant="h4" component="h1" gutterBottom className="page-title">
-            Gestión de Evaluaciones
+    <Box className="content-wrapper">
+      <Paper elevation={3} className="evaluaciones-container">
+        <Typography variant="h4" component="h1" gutterBottom className="page-title">
+          Gestión de Evaluaciones
+        </Typography>
+        {error && (
+          <Typography color="error" sx={{ mb: 2 }}>
+            {error}
           </Typography>
-          {error && (
-            <Typography color="error" sx={{ mb: 2 }}>
-              {error}
-            </Typography>
-          )}
-          <Box className="datagrid-container">
-            <DataGrid
-              rows={evaluaciones}
-              columns={columns}
-              initialState={{
-                pagination: {
-                  paginationModel: { page: 0, pageSize: 10 },
-                }
-              }}
-              pageSizeOptions={[10, 25, 50]}
-              checkboxSelection
-              disableRowSelectionOnClick
-              loading={loading}
-              getRowId={(row) => row.id}
-              className="evaluaciones-grid"
-            />
-          </Box>
-        </Paper>
-      </Box>
+        )}
+        <Box className="datagrid-container">
+          <DataGrid
+            rows={evaluaciones}
+            columns={columns}
+            initialState={{
+              pagination: {
+                paginationModel: { page: 0, pageSize: 10 },
+              }
+            }}
+            pageSizeOptions={[10, 25, 50]}
+            checkboxSelection
+            disableRowSelectionOnClick
+            loading={loading}
+            getRowId={(row) => row.id}
+            className="evaluaciones-grid"
+          />
+        </Box>
+      </Paper>
     </Box>
   );
 }

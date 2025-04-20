@@ -1,4 +1,5 @@
 import React, { useState, useEffect } from 'react';
+import { useNavigate } from 'react-router-dom';
 import {
   AppBar,
   Toolbar,
@@ -14,22 +15,17 @@ import '../styles/topbar.css';
 import authService from '../services/authService';
 
 function TopBar() {
+  const navigate = useNavigate();
   const [anchorEl, setAnchorEl] = useState(null);
   const [userName, setUserName] = useState('');
 
   useEffect(() => {
     const userData = authService.getCurrentUser();
-    console.log('Datos del usuario en TopBar:', userData);
-
     if (userData && userData.user) {
       const user = userData.user;
-      console.log('Datos del usuario anidados:', user);
-
-      // El nombre completo está en la propiedad 'nombre'
       if (user.nombre) {
         setUserName(user.nombre);
       } else {
-        // Si no hay nombre, mostramos el email
         setUserName(user.email || 'Usuario');
       }
     }
@@ -43,9 +39,14 @@ function TopBar() {
     setAnchorEl(null);
   };
 
+  const handleProfile = () => {
+    handleClose();
+    navigate('/perfil');
+  };
+
   const handleLogout = () => {
     authService.logout();
-    window.location.href = '/login';
+    navigate('/login');
   };
 
   return (
@@ -53,12 +54,12 @@ function TopBar() {
       <Toolbar>
         <Box className="topbar-content">
           <Box className="topbar-right">
-            <Typography variant="subtitle1" style={{ color: 'var(--white)', marginRight: '16px' }}>
+            <Typography variant="subtitle1" sx={{ color: 'white', marginRight: '16px' }}>
               {userName}
             </Typography>
             <IconButton
               size="large"
-              aria-label="account of current user"
+              aria-label="cuenta del usuario"
               aria-controls="menu-appbar"
               aria-haspopup="true"
               onClick={handleMenu}
@@ -83,7 +84,7 @@ function TopBar() {
               open={Boolean(anchorEl)}
               onClose={handleClose}
             >
-              <MenuItem onClick={handleClose}>Perfil</MenuItem>
+              <MenuItem onClick={handleProfile}>Perfil</MenuItem>
               <MenuItem onClick={handleClose}>Configuración</MenuItem>
               <MenuItem onClick={handleLogout}>Cerrar sesión</MenuItem>
             </Menu>

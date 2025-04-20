@@ -1,7 +1,7 @@
 #root {
-  max-width: 1280px;
-  margin: 0 auto;
-  padding: 2rem;
+  width: 100%;
+  margin: 0;
+  padding: 0;
   text-align: center;
 }
 
@@ -44,13 +44,20 @@
 .app-container {
   display: flex;
   min-height: 100vh;
-  background-color: #f5f5f5;
+  background-color: var(--background-color);
+  margin: 0;
+  padding: 0;
+  overflow: hidden;
 }
 
 .main-content {
   flex: 1;
-  margin-left: 240px;
+  margin: 0;
+  padding: 0;
   transition: margin-left 0.3s ease;
+  background-color: var(--background-color);
+  min-height: 100vh;
+  position: relative;
 }
 
 .main-content.sidebar-closed {
@@ -58,8 +65,11 @@
 }
 
 .content-wrapper {
-  padding: 24px;
-  margin-top: 64px;
+  padding: 0;
+  margin: 0;
+  min-height: calc(100vh - 64px);
+  width: 100%;
+  background-color: var(--background-color);
 }
 
 /* Estilos generales */
@@ -73,6 +83,8 @@ body {
   font-family: "Roboto", sans-serif;
   -webkit-font-smoothing: antialiased;
   -moz-osx-font-smoothing: grayscale;
+  margin: 0;
+  padding: 0;
 }
 
 /* Transiciones suaves */
