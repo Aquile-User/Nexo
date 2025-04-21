@@ -131,67 +131,50 @@ exports.crearEvaluacion = async (req, res) => {
 
 exports.actualizarEvaluacion = async (req, res) => {
   const { id } = req.params;
-  const { fecha_programada, resultado, comentarios, estado, fecha_realizada } =
-    req.body;
+  const { estado, motivo_no_evaluacion, resultado } = req.body;
 
   try {
-    const evaluacion = await Evaluacion.findByPk(id);
-    if (!evaluacion) {
-      return res.status(404).json({ error: "Evaluación no encontrada" });
-    }
-
-    if (estado === "completada") {
-      await evaluacion.update({
-        fecha_programada,
-        resultado,
-        comentarios,
-        estado,
-        fecha_realizada: new Date(),
-      });
-    } else {
-      await evaluacion.update({
-        fecha_programada,
-        resultado,
-        comentarios,
-        estado,
+    // Validate required fields based on estado
+    if (estado === 'cancelada' && !motivo_no_evaluacion) {
+      return res.status(400).json({
+        error: 'Motivo de cancelación es requerido cuando el estado es "cancelada"'
       });
     }
 
-    const evaluacionActualizada = await Evaluacion.findByPk(id, {
+    if (estado === 'completada' && !resultado) {
+      return res.status(400).json({
+        error: 'Resultado es requerido cuando el estado es "completada"'
+      });
+    }
+
+    // Find evaluation to update
+    const evaluacion = await Evaluacion.findByPk(id, {
       include: [
         {
           model: Ubicacion,
           as: "ubicacion",
-          attributes: [
-            "nombre",
-            "direccion",
-            "coordenada",
-            "provincia",
-            "municipio",
-            "sector",
-          ],
-        },
-        {
-          model: Asignacion,
-          as: "asignaciones",
-          include: [
-            {
-              model: Usuario,
-              as: "usuario",
-              attributes: ["nombre", "apellido", "email"],
-            },
-          ],
-        },
-      ],
+          attributes: ["nombre", "direccion", "provincia", "municipio", "sector"]
+        }
+      ]
     });
+    
+    if (!evaluacion) {
+      return res.status(404).json({ error: 'Evaluación no encontrada' });
+    }
 
-    res.json({
+    // Update evaluation
+    const updated = await evaluacion.update(req.body);
+    
+    return res.json({
       mensaje: "Evaluación actualizada exitosamente",
-      evaluacion: evaluacionActualizada,
+      evaluacion: updated
     });
   } catch (error) {
-    console.error(error);
-    res.status(500).json({ error: "Error al actualizar evaluación" });
+    console.error('Error al actualizar evaluación:', error);
+    return res.status(500).json({ 
+      error: 'Error al actualizar evaluación',
+      detalles: error.message 
+    });
   }
 };
 
