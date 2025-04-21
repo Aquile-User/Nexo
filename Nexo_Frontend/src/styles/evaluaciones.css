@@ -13,62 +13,65 @@
   max-width: 1400px;
   display: flex;
   flex-direction: column;
-  align-items: center;
+  gap: 1rem;
+  padding: 2rem;
+}
+
+.page-title {
+  color: var(--primary-color);
+  margin-bottom: 40px; /* Unified margin */
+  width: 100%;
+  text-align: center;
+  font-size: 1.8rem; /* Unified font size */
+  font-weight: 600 !important;
+}
+
+.evaluaciones-header {
+  margin-bottom: 1rem;
+  display: flex;
+  justify-content: flex-end;
 }
 
 .evaluaciones-container {
   background-color: #ffffff;
   border-radius: 8px;
   padding: 24px;
-  height: calc(100vh - 120px);
+  height: calc(100vh - 200px);
   overflow: hidden;
   margin-left: 32px;
   margin-right: 32px;
-  margin-top: 84px; /* Aumentado a 84px */
+  margin-top: 135px;
   display: flex;
   flex-direction: column;
   align-items: center;
 }
 
-.page-title {
-  margin-bottom: 48px; /* Aumentado a 48px */
-  color: #1976d2;
-  width: 100%;
-  text-align: center;
-  font-size: 2rem; /* Aumentado el tamaño */
+/* Responsive adjustments */
+@media (max-width: 768px) {
+  .evaluaciones-container {
+    padding: 16px;
+    height: calc(100vh - 150px);
+    margin-left: 16px;
+    margin-right: 16px;
+    margin-top: 100px;
+  }
+}
+
+@media (max-width: 480px) {
+  .evaluaciones-container {
+    padding: 12px;
+    height: calc(100vh - 120px);
+    margin-left: 8px;
+    margin-right: 8px;
+    margin-top: 80px;
+  }
 }
 
 .datagrid-container {
-  height: calc(100% - 140px); /* Aumentado el espacio */
+  height: calc(100% - 100px); /* Unified height */
   width: 100%;
   max-width: calc(100vw - 400px);
-  margin: 32px auto 0; /* Aumentado a 32px */
-  display: flex;
-  justify-content: center;
-  padding: 0 24px; /* Aumentado padding horizontal */
-}
-
-.evaluaciones-container.sidebar-open {
-  margin-left: 32px;
-}
-
-.evaluaciones-container.sidebar-closed {
-  margin-left: 16px;
-}
-
-.page-title {
-  margin-bottom: 40px; /* Aumentado el margen inferior */
-  color: #1976d2;
-  width: 100%;
-  text-align: center;
-  font-size: 1.8rem;
-}
-
-.datagrid-container {
-  height: calc(100% - 100px); /* Ajustado para dar más espacio */
-  width: 100%;
-  max-width: calc(100vw - 400px);
-  margin: 24px auto 0; /* Aumentado el margen superior */
+  margin: 24px auto 0; /* Unified margin */
   display: flex;
   justify-content: center;
   padding: 0 16px;
@@ -269,4 +272,53 @@
   display: flex;
   justify-content: center;
   align-items: center;
+}
+
+/* Estilos para el formulario de visitas */
+.visita-form-modal {
+  position: relative;
+  background: var(--white);
+  border-radius: 12px;
+  padding: 2rem;
+  width: 100%;
+  max-width: 600px;
+}
+
+.visita-form-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  margin-bottom: 2rem;
+}
+
+.visita-form-content {
+  display: flex;
+  flex-direction: column;
+  gap: 1.5rem;
+}
+
+.form-group {
+  display: flex;
+  flex-direction: column;
+  gap: 0.5rem;
+}
+
+.datetime-picker-group {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 1rem;
+}
+
+.notification-settings {
+  border: 1px solid var(--border-color);
+  padding: 1rem;
+  border-radius: 8px;
+}
+
+.page-title-container {
+  display: flex;
+  align-items: center; /* Vertically centers the items */
+  justify-content: center; /* Centers the items horizontally */
+  gap: 8px; /* Adds space between the title and button */
+  margin-bottom: 40px; /* Adjust as needed */
 }
