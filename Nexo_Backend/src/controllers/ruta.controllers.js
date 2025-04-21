@@ -69,8 +69,8 @@ exports.crearRuta = async (req, res) => {
         .status(400)
         .json({ error: "Faltan datos necesarios (nombre, descripcion)" });
     }
-    const Ruta = await Ruta.create({ nombre, descripcion });
-    res.status(201).json({ mensaje: "Ruta creada exitosamente", Ruta });
+    const ruta = await Ruta.create({ nombre, descripcion });
+    res.status(201).json({ mensaje: "Ruta creada exitosamente", ruta });
   } catch (error) {
     console.error(error);
     res.status(500).json({ error: "Error al crear ruta" });
@@ -90,7 +90,6 @@ exports.modificarRuta = async (req, res) => {
     res.status(500).json({ error: "Error al modificar ruta" });
   }
 };
-
 
 exports.eliminarRuta = async (req, res) => {
   const { id } = req.params;

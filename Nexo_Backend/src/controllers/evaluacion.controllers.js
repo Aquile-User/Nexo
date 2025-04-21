@@ -4,67 +4,68 @@ const Asignacion = require("../models/asignacion");
 const Usuario = require("../models/usuario");
 
 exports.obtenerEvaluaciones = async (req, res) => {
-  const { id } = req.params;
   try {
-    if (id) {
-      const evaluacion = await Evaluacion.findByPk(id, {
-        include: [
-          {
-            model: Ubicacion,
-            attributes: [
-              "nombre",
-              "direccion",
-              "coordenada",
-              "provincia",
-              "municipio",
-              "sector",
-              "estado",
-            ],
-          },
-          {
-            model: Asignacion,
-            include: [{
-              model: Usuario,
-              attributes: ["nombre", "apellido", "email"],
-            }],
-          },
-        ],
-      });
-
-      if (!evaluacion) {
-        return res.status(404).json({ error: "Evaluación no encontrada" });
-      }
-      return res.json(evaluacion);
-    }
+    const { id } = req.params;
+    console.log("Iniciando obtención de evaluaciones...");
 
     const evaluaciones = await Evaluacion.findAll({
       include: [
         {
           model: Ubicacion,
+          as: "ubicacion",
           attributes: [
             "nombre",
             "direccion",
-            "coordenada",
             "provincia",
             "municipio",
             "sector",
-            "estado",
           ],
         },
-        {
-          model: Asignacion,
-          include: [{
-            model: Usuario,
-            attributes: ["nombre", "apellido", "email"],
-          }],
-        },
       ],
+      logging: (sql, timing) => {
+        console.log("SQL Query:", sql);
+        console.log("Query Timing:", timing, "ms");
+      },
+    });
+
+    console.log("Evaluaciones encontradas:", evaluaciones.length);
+    console.log(
+      "Primera evaluación (si existe):",
+      evaluaciones[0]
+        ? JSON.stringify(evaluaciones[0], null, 2)
+        : "No hay evaluaciones"
+    );
+
+    // Verificar la estructura de los datos
+    evaluaciones.forEach((evaluacion, index) => {
+      console.log(`\nEvaluación ${index + 1}:`);
+      console.log("ID:", evaluacion.evaluacion_id);
+      console.log("Estado:", evaluacion.estado);
+      console.log(
+        "Ubicación:",
+        evaluacion.ubicacion
+          ? evaluacion.ubicacion.nombre
+          : "No tiene ubicación"
+      );
+      console.log("Fecha programada:", evaluacion.fecha_programada);
+      console.log("Fecha realizada:", evaluacion.fecha_realizada);
+      console.log("Tipo:", evaluacion.tipo);
+      console.log("Resultado:", evaluacion.resultado);
+      console.log("Motivo:", evaluacion.motivo_no_evaluacion);
+      console.log("Comentarios:", evaluacion.comentarios);
     });
 
     return res.json(evaluaciones);
   } catch (error) {
-    console.error(error);
-    res.status(500).json({ error: "Error al obtener evaluaciones" });
+    console.error("Error detallado:", {
+      message: error.message,
+      stack: error.stack,
+      name: error.name,
+    });
+    return res.status(500).json({
+      error: "Error al obtener evaluaciones",
+      detalles: error.message,
+    });
   }
 };
 
@@ -72,9 +73,18 @@ exports.crearEvaluacion = async (req, res) => {
   const { ubicacion_id, fecha_programada, tipo, comentarios } = req.body;
 
   try {
+    // Validaciones básicas
     if (!ubicacion_id || !fecha_programada || !tipo) {
       return res.status(400).json({
         error: "Faltan datos necesarios (ubicacion_id, fecha_programada, tipo)",
+      });
+    }
+
+    // Verificar que la ubicación existe
+    const ubicacion = await Ubicacion.findByPk(ubicacion_id);
+    if (!ubicacion) {
+      return res.status(404).json({
+        error: `No se encontró la ubicación con ID ${ubicacion_id}`,
       });
     }
 
@@ -86,30 +96,36 @@ exports.crearEvaluacion = async (req, res) => {
       estado: "pendiente",
     });
 
-    const evaluacionCreada = await Evaluacion.findByPk(evaluacion.evaluacion_id, {
-      include: [
-        {
-          model: Ubicacion,
-          attributes: [
-            "nombre",
-            "direccion",
-            "coordenada",
-            "provincia",
-            "municipio",
-            "sector",
-            "estado",
-          ],
-        },
-      ],
-    });
+    const evaluacionCreada = await Evaluacion.findByPk(
+      evaluacion.evaluacion_id,
+      {
+        include: [
+          {
+            model: Ubicacion,
+            as: "ubicacion",
+            attributes: [
+              "nombre",
+              "direccion",
+              "coordenada",
+              "provincia",
+              "municipio",
+              "sector",
+            ],
+          },
+        ],
+      }
+    );
 
     res.status(201).json({
       mensaje: "Evaluación creada exitosamente",
       evaluacion: evaluacionCreada,
     });
   } catch (error) {
-    console.error(error);
-    res.status(500).json({ error: "Error al crear evaluación" });
+    console.error("Error al crear evaluación:", error);
+    res.status(500).json({
+      error: "Error al crear evaluación",
+      detalles: error.message,
+    });
   }
 };
 
@@ -124,7 +140,6 @@ exports.actualizarEvaluacion = async (req, res) => {
       return res.status(404).json({ error: "Evaluación no encontrada" });
     }
 
-    // Si se actualiza el estado a "completada", se establece la fecha_realizada
     if (estado === "completada") {
       await evaluacion.update({
         fecha_programada,
@@ -146,14 +161,26 @@ exports.actualizarEvaluacion = async (req, res) => {
       include: [
         {
           model: Ubicacion,
-          attributes: ["nombre", "direccion", "coordenada", "provincia", "municipio", "sector", "estado"],
+          as: "ubicacion",
+          attributes: [
+            "nombre",
+            "direccion",
+            "coordenada",
+            "provincia",
+            "municipio",
+            "sector",
+          ],
         },
         {
           model: Asignacion,
-          include: [{
-            model: Usuario,
-            attributes: ["nombre", "apellido", "email"],
-          }],
+          as: "asignaciones",
+          include: [
+            {
+              model: Usuario,
+              as: "usuario",
+              attributes: ["nombre", "apellido", "email"],
+            },
+          ],
         },
       ],
     });
@@ -210,14 +237,26 @@ exports.cancelarEvaluacion = async (req, res) => {
       include: [
         {
           model: Ubicacion,
-          attributes: ["nombre", "direccion", "coordenada", "provincia", "municipio", "sector", "estado"],
+          as: "ubicacion",
+          attributes: [
+            "nombre",
+            "direccion",
+            "coordenada",
+            "provincia",
+            "municipio",
+            "sector",
+          ],
         },
         {
           model: Asignacion,
-          include: [{
-            model: Usuario,
-            attributes: ["nombre", "apellido", "email"],
-          }],
+          as: "asignaciones",
+          include: [
+            {
+              model: Usuario,
+              as: "usuario",
+              attributes: ["nombre", "apellido", "email"],
+            },
+          ],
         },
       ],
     });

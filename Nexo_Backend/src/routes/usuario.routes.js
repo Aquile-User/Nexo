@@ -1,9 +1,11 @@
 const express = require("express");
 const router = express.Router();
 const usuarioController = require("../controllers/usuario.controllers");
+const authMiddleware = require("../middleware/auth");
 
 // Rutas para usuarios
 router.post("/login", usuarioController.login);
+router.get("/perfil", authMiddleware, usuarioController.getProfile); // Mover esta ruta antes de la ruta con parámetro opcional
 router.get("/:id?", usuarioController.obtenerUsuarios); // Agregamos un parámetro opcional ':id?'
 router.post("/", usuarioController.crearUsuario); // POST /usuarios
 router.put("/:id", usuarioController.actualizarUsuario); // PUT /usuarios/:id

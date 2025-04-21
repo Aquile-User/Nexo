@@ -56,7 +56,7 @@ function SignIn() {
       setIsLoading(true);
       try {
         await authService.login(formData.email, formData.password);
-        navigate('/dashboard');
+        window.location.href = '/dashboard';
       } catch (error) {
         setErrors({ submit: error.message || 'Error al iniciar sesión. Por favor intenta de nuevo.' });
       } finally {

@@ -1,13 +1,16 @@
+const express = require("express");
+const bodyParser = require("body-parser");
+const cors = require("cors");
+
+// Importar modelos y sus asociaciones
+require("./src/models/index");
+
 const usuarioRoutes = require("./src/routes/usuario.routes");
 const rolesRoutes = require("./src/routes/roles.routes");
 const rutasRoutes = require("./src/routes/ruta.routes");
 const evaluacionRoutes = require("./src/routes/evaluacion.routes");
 const asignacionRoutes = require("./src/routes/asignacion.routes");
 const ubicacionRoutes = require("./src/routes/ubicacion.routes");
-
-const express = require("express");
-const bodyParser = require("body-parser");
-const cors = require("cors");
 
 const app = express();
 

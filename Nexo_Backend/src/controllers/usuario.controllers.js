@@ -13,7 +13,7 @@ exports.obtenerUsuarios = async (req, res) => {
       const usuario = await Usuario.findByPk(id, {
         include: {
           model: Rol,
-          as: "rol",
+          as: "rolUsuario",
           attributes: ["nombre"], // Solo traer el nombre del rol
         },
       }); // findByPk busca por la clave primaria (id)
@@ -31,7 +31,7 @@ exports.obtenerUsuarios = async (req, res) => {
     const usuarios = await Usuario.findAll({
       include: {
         model: Rol,
-        as: "rol",
+        as: "rolUsuario",
         attributes: ["nombre"], // Solo traer el nombre del rol
       },
     });
@@ -137,7 +137,7 @@ exports.login = async (req, res) => {
       where: { correo: email },
       include: {
         model: Rol,
-        as: "rol",
+        as: "rolUsuario",
         attributes: ["nombre"],
       },
     });
@@ -165,8 +165,7 @@ exports.login = async (req, res) => {
       {
         id: usuario.usuario_id,
         email: usuario.correo,
-        rol: usuario.rol.nombre,
-        coordenada: datosGeocodificacion.coordenada,
+        rol: usuario.rolUsuario.nombre,
       },
       process.env.JWT_SECRET || "tu_secreto_jwt",
       { expiresIn: "24h" }
@@ -179,11 +178,39 @@ exports.login = async (req, res) => {
         id: usuario.usuario_id,
         email: usuario.correo,
         nombre: usuario.nombre,
-        rol: usuario.rol.nombre,
+        rol: usuario.rolUsuario.nombre,
       },
     });
   } catch (error) {
     console.error(error);
     res.status(500).json({ error: "Error al iniciar sesión" });
+  }
+};
+
+// Obtener perfil del usuario
+exports.getProfile = async (req, res) => {
+  try {
+    const userId = req.user.id || req.user.usuario_id; // Intentar ambos campos
+
+    const usuario = await Usuario.findOne({
+      where: { usuario_id: userId },
+      include: [
+        {
+          model: Rol,
+          as: "rolUsuario",
+          attributes: ["nombre"],
+        },
+      ],
+      attributes: { exclude: ["password_hash"] },
+    });
+
+    if (!usuario) {
+      return res.status(404).json({ message: "Usuario no encontrado" });
+    }
+
+    res.json(usuario);
+  } catch (error) {
+    console.error(error);
+    res.status(500).json({ message: "Error al obtener el perfil del usuario" });
   }
 };

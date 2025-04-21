@@ -1,7 +1,7 @@
 #root {
-  max-width: 1280px;
-  margin: 0 auto;
-  padding: 2rem;
+  width: 100%;
+  margin: 0;
+  padding: 0;
   text-align: center;
 }
 
@@ -39,4 +39,74 @@
 
 .read-the-docs {
   color: #888;
+}
+
+.app-container {
+  display: flex;
+  min-height: 100vh;
+  background-color: var(--background-color);
+  margin: 0;
+  padding: 0;
+  overflow: hidden;
+}
+
+.main-content {
+  flex: 1;
+  margin: 0;
+  padding: 0;
+  transition: margin-left 0.3s ease;
+  background-color: var(--background-color);
+  min-height: 100vh;
+  position: relative;
+}
+
+.main-content.sidebar-closed {
+  margin-left: 64px;
+}
+
+.content-wrapper {
+  padding: 0;
+  margin: 0;
+  min-height: calc(100vh - 64px);
+  width: 100%;
+  background-color: var(--background-color);
+}
+
+/* Estilos generales */
+* {
+  margin: 0;
+  padding: 0;
+  box-sizing: border-box;
+}
+
+body {
+  font-family: "Roboto", sans-serif;
+  -webkit-font-smoothing: antialiased;
+  -moz-osx-font-smoothing: grayscale;
+  margin: 0;
+  padding: 0;
+}
+
+/* Transiciones suaves */
+.MuiPaper-root {
+  transition: all 0.3s ease;
+}
+
+/* Estilos para scrollbar */
+::-webkit-scrollbar {
+  width: 8px;
+  height: 8px;
+}
+
+::-webkit-scrollbar-track {
+  background: #f1f1f1;
+}
+
+::-webkit-scrollbar-thumb {
+  background: #888;
+  border-radius: 4px;
+}
+
+::-webkit-scrollbar-thumb:hover {
+  background: #555;
 }

@@ -2,6 +2,7 @@ const Ubicacion = require("../models/ubicacion");
 const Evaluacion = require("../models/evaluacion");
 const { Op } = require("sequelize");
 const axios = require("axios");
+const sequelize = require("../config/database");
 
 const obtenerDatosGeocodificacion = async (direccion) => {
   try {
@@ -26,10 +27,7 @@ const obtenerDatosGeocodificacion = async (direccion) => {
     const address = result.address || {};
 
     return {
-      coordenada: {
-        type: "Point",
-        coordinates: [parseFloat(result.lon), parseFloat(result.lat)],
-      },
+      coordenada: `POINT(${result.lon} ${result.lat})`,
       provincia: address.state || address.county || address.region || "",
       municipio: address.city || address.town || address.municipality || "",
       sector: address.suburb || address.neighbourhood || "",
@@ -84,17 +82,19 @@ exports.crearUbicacion = async (req, res) => {
       });
     }
 
+    // Obtener datos de geocodificación
     const datosGeocodificacion = await obtenerDatosGeocodificacion(direccion);
 
+    // Crear la ubicación con el punto geométrico correctamente formateado
     const ubicacion = await Ubicacion.create({
       nombre,
       tipo_ubicacion,
       direccion: datosGeocodificacion.direccion_formateada,
-      coordenada: datosGeocodificacion.coordenada,
+      coordenada: sequelize.fn('ST_GeomFromText', 'POINT(-69.931051 18.481540)', 4326),
       provincia: datosGeocodificacion.provincia,
       municipio: datosGeocodificacion.municipio,
       sector: datosGeocodificacion.sector,
-      codigo: datosGeocodificacion.codigo,
+      codigo: datosGeocodificacion.codigo || null,
       telefono,
       email_contacto,
       horario_atencion,
@@ -211,7 +211,7 @@ exports.actualizarUbicacion = async (req, res) => {
       datosActualizacion = {
         ...datosActualizacion,
         direccion: datosGeocodificacion.direccion_formateada,
-        coordenada: datosGeocodificacion.coordenada,
+        coordenada: sequelize.fn('ST_GeomFromText', datosGeocodificacion.coordenada),
         provincia: datosGeocodificacion.provincia,
         municipio: datosGeocodificacion.municipio,
         sector: datosGeocodificacion.sector,

@@ -1,0 +1,67 @@
+.topbar {
+  background-color: var(--primary-color);
+  box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
+  z-index: 1100;
+}
+
+.topbar-content {
+  display: flex;
+  justify-content: flex-end;
+  align-items: center;
+  width: 100%;
+  padding: 0 16px;
+}
+
+.topbar-title {
+  color: #1976d2;
+  font-weight: 600;
+}
+
+.topbar-right {
+  display: flex;
+  align-items: center;
+}
+
+.MuiAvatar-root {
+  background-color: var(--white);
+  cursor: pointer;
+  width: 32px !important;
+  height: 32px !important;
+  margin: 0 !important;
+}
+
+.MuiIconButton-root {
+  padding: 0 !important;
+  margin: 0 !important;
+  min-width: 32px !important;
+  width: 32px !important;
+  height: 32px !important;
+}
+
+.MuiIconButton-root .MuiTouchRipple-root {
+  display: none !important;
+}
+
+.MuiMenu-paper {
+  margin-top: 32px !important;
+  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.1);
+  border-radius: 8px;
+}
+
+.MuiMenu-list {
+  padding: 0 !important;
+}
+
+.MuiMenuItem-root {
+  padding: 12px 24px;
+  transition: background-color 0.2s ease;
+}
+
+.MuiMenuItem-root:hover {
+  background-color: rgba(255, 255, 255, 0.08);
+}
+
+/* Sobreescribir el color de fondo del AppBar de Material-UI */
+.MuiAppBar-root {
+  background-color: var(--primary-color) !important;
+}

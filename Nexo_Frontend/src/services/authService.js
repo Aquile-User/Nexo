@@ -10,6 +10,7 @@ const authService = {
 
       if (response.data.token) {
         localStorage.setItem("user", JSON.stringify(response.data));
+        localStorage.setItem("token", response.data.token);
       }
 
       return response.data;
@@ -20,12 +21,29 @@ const authService = {
 
   logout() {
     localStorage.removeItem("user");
+    localStorage.removeItem("token");
   },
 
   getCurrentUser() {
-    const user = localStorage.getItem("user");
-    return user ? JSON.parse(user) : null;
+    const userStr = localStorage.getItem("user");
+    return userStr ? JSON.parse(userStr) : null;
   },
+};
+
+export const getCurrentUserProfile = async () => {
+  try {
+    const token = localStorage.getItem("token");
+    const response = await api.get("/usuarios/perfil", {
+      headers: {
+        Authorization: `Bearer ${token}`,
+      },
+    });
+
+    return response.data;
+  } catch (error) {
+    console.error("Error:", error);
+    throw error;
+  }
 };
 
 export default authService;
