@@ -222,6 +222,7 @@ function Evaluaciones() {
             loading={loading}
             getRowId={(row) => row.id}
             className="evaluaciones-grid"
+            onRowDoubleClick={(params) => navigate(`/editar-evaluacion/${params.row.id}`)}
           />
         </Box>
       </Paper>

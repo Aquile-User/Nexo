@@ -8,6 +8,7 @@ import InicioSesion from './pages/inicioSesion';
 import Perfil from './pages/perfil';
 import './App.css';
 import CrearEvaluacion from './pages/CrearEvaluacion'; // Changed import name
+import EditarEvaluacion from './pages/EditarEvaluacion';
 
 function App() {
   const [sidebarOpen, setSidebarOpen] = useState(true);
@@ -44,6 +45,8 @@ function App() {
         <Route path="/login" element={<InicioSesion />} />
         <Route path="/*" element={<ProtectedLayout />} />
         <Route path="/crear-evaluacion" element={<CrearEvaluacion />} /> {/* Updated path and component name */}
+        // Add to your routes:
+        <Route path="/editar-evaluacion/:id" element={<EditarEvaluacion />} />
       </Routes>
     </Router>
   );

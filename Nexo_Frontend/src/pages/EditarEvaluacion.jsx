@@ -1,57 +1,96 @@
 import React, { useState, useEffect } from 'react';
+import { useParams, useNavigate } from 'react-router-dom';
+import { Box, TextField, Button, Typography, Paper, MenuItem, Container } from '@mui/material';
+import api from '../services/api';
+import TopBar from '../components/TopBar';
+import SideBar from '../components/SideBar';
 import SuccessNotification from '../components/notifications/SuccessNotification';
 import ErrorNotification from '../components/notifications/ErrorNotification';
-import { Box, TextField, Button, Typography, Paper, List, ListItem, ListItemText, Container } from '@mui/material';
-import api from '../services/api';
-import TopBar from '../components/TopBar'; // Add this import
-import SideBar from '../components/SideBar'; // Add this import
 
-function CrearEvaluacion() {
+function EditarEvaluacion() {
+  const { id } = useParams();
+  const navigate = useNavigate();
   const [formData, setFormData] = useState({
     ubicacion_id: '',
     fecha_programada: '',
-    hora_programada: '', // Add new field for time
+    hora_programada: '',
     tipo: '',
-    comentarios: ''
+    comentarios: '',
+    resultado: '',
+    estado: 'pendiente',
+    motivo_no_evaluacion: '',
+    fecha_realizada: ''
   });
-
-  const [ubicaciones, setUbicaciones] = useState([]);
-
-  useEffect(() => {
-    const fetchUbicaciones = async () => {
-      try {
-        const response = await api.get('/ubicaciones');
-        console.log('Ubicaciones recibidas:', response.data.ubicaciones); // Log the ubicaciones array
-        if (Array.isArray(response.data.ubicaciones)) {
-          setUbicaciones(response.data.ubicaciones);
-        } else {
-          console.error('Se esperaba un array pero se recibió:', response.data);
-          setUbicaciones([]);
-        }
-      } catch (error) {
-        console.error('Error al obtener ubicaciones:', error);
-        setUbicaciones([]);
-      }
-    };
-
-    fetchUbicaciones();
-  }, []);
-
-  const handleChange = (e) => {
-    const { name, value } = e.target;
-    setFormData({ ...formData, [name]: value });
-  };
 
   const [notification, setNotification] = useState({
     open: false,
     message: '',
-    type: '' // 'success' or 'error'
+    type: ''
   });
+
+  useEffect(() => {
+    const fetchEvaluacion = async () => {
+      try {
+        const response = await api.get(`/evaluaciones/${id}`);
+        const data = response.data;
+        
+        // Verificamos si es un array y tomamos el primer elemento
+        const evaluacion = Array.isArray(data) ? data[0] : data;
+        console.log('Datos de evaluación:', evaluacion); // Debug log
+
+        // Parse date and time if they exist
+        const fechaProgramada = evaluacion.fecha_programada ? evaluacion.fecha_programada.split('T')[0] : '';
+        const horaProgramada = evaluacion.fecha_programada ? evaluacion.fecha_programada.split('T')[1].substring(0, 5) : '';
+        
+        const newFormData = {
+          ubicacion_id: evaluacion.ubicacion_id || '',
+          fecha_programada: fechaProgramada,
+          hora_programada: horaProgramada,
+          tipo: evaluacion.tipo || '',
+          comentarios: evaluacion.comentarios || '',
+          resultado: evaluacion.resultado || '',
+          estado: evaluacion.estado || 'pendiente',
+          motivo_no_evaluacion: evaluacion.motivo_no_evaluacion || '',
+          fecha_realizada: evaluacion.fecha_realizada || ''
+        };
+
+        console.log('Datos asignados al formulario:', newFormData); // Debug log
+        setFormData(newFormData);
+      } catch (error) {
+        console.error('Error al obtener evaluación:', error);
+        setNotification({
+          open: true,
+          message: 'Error al cargar la evaluación',
+          type: 'error'
+        });
+      }
+    };
+  
+    fetchEvaluacion();
+  }, [id]);
+
+  const handleChange = (e) => {
+    const { name, value } = e.target;
+    
+    // If state changes to completed, set current date/time
+    if (name === 'estado' && value === 'completada') {
+      const now = new Date();
+      const fecha = now.toISOString().split('T')[0];
+      const hora = now.toTimeString().substring(0, 5);
+      
+      setFormData(prev => ({
+        ...prev,
+        [name]: value,
+        fecha_realizada: `${fecha}T${hora}:00`
+      }));
+    } else {
+      setFormData(prev => ({ ...prev, [name]: value }));
+    }
+  };
 
   const handleSubmit = async (e) => {
     e.preventDefault();
     try {
-      // Combine date and time before sending to API
       const fechaCompleta = formData.fecha_programada && formData.hora_programada
         ? `${formData.fecha_programada}T${formData.hora_programada}:00`
         : formData.fecha_programada;
@@ -63,31 +102,21 @@ function CrearEvaluacion() {
       
       delete dataToSend.hora_programada;
   
-      const response = await api.post('/evaluaciones', dataToSend);
+      const response = await api.put(`/evaluaciones/${id}`, dataToSend);
       
-      if (response.status === 201) {
-        setNotification({
-          open: true,
-          message: 'Evaluación creada exitosamente',
-          type: 'success'
-        });
-        
-        // Reset form after successful submission
-        setFormData({
-          ubicacion_id: '',
-          fecha_programada: '',
-          hora_programada: '',
-          tipo: '',
-          comentarios: ''
-        });
-      } else {
-        throw new Error('Error al crear la evaluación');
-      }
-    } catch (error) {
-      console.error('Error:', error);
       setNotification({
         open: true,
-        message: error.response?.data?.message || 'Error al crear la evaluación',
+        message: response.data.mensaje || 'Evaluación actualizada exitosamente',
+        type: 'success'
+      });
+      
+      setTimeout(() => {
+        navigate('/evaluaciones');
+      }, 1500);
+    } catch (error) {
+      setNotification({
+        open: true,
+        message: error.response?.data?.error || 'Error al actualizar evaluación',
         type: 'error'
       });
     }
@@ -105,24 +134,23 @@ function CrearEvaluacion() {
           <TopBar />
           <Container maxWidth="lg" sx={{ 
             py: 4, 
-            mt: 10,  // Aumenté el margen superior
+            mt: 6, // Changed from mt: 8 to mt: 6 to move it up more
             display: 'flex',
             flexDirection: 'column',
             justifyContent: 'center',
-            minHeight: 'calc(100vh - 128px)'  // Ajusté la altura
+            minHeight: 'calc(100vh - 128px)'
           }}>
             <Box sx={{ 
               display: 'flex', 
               flexDirection: { xs: 'column', md: 'row' },
               gap: 3,
               justifyContent: 'center',
-              alignItems: 'center',  // Cambié de 'stretch' a 'center'
+              alignItems: 'center',
             }}>
               <Paper elevation={3} sx={{ 
                 padding: 4, 
                 width: '100%',
                 maxWidth: { xs: '100%', md: '550px' },
-                maxHeight: { xs: '100%', md: '700px' },
                 background: 'linear-gradient(135deg, var(--gradient-start) 0%, var(--gradient-end) 100%)',
                 borderRadius: 2,
                 display: 'flex',
@@ -147,9 +175,11 @@ function CrearEvaluacion() {
                     paddingBottom: 2
                   }}
                 >
-                  Crear Evaluacion
+                  Editar Evaluación
                 </Typography>
+                
                 <Box component="form" onSubmit={handleSubmit} sx={{ display: 'flex', flexDirection: 'column', gap: 3 }}>
+                  {/* Existing fields from CrearEvaluacion */}
                   <TextField 
                     label="Ubicación ID" 
                     name="ubicacion_id" 
@@ -159,6 +189,7 @@ function CrearEvaluacion() {
                     fullWidth
                     variant="outlined"
                   />
+                  
                   <Box sx={{ display: 'flex', gap: 2, flexDirection: { xs: 'column', sm: 'row' } }}>
                     <TextField 
                       label="Fecha Programada" 
@@ -183,6 +214,7 @@ function CrearEvaluacion() {
                       variant="outlined"
                     />
                   </Box>
+                  
                   <TextField 
                     label="Tipo" 
                     name="tipo" 
@@ -192,6 +224,62 @@ function CrearEvaluacion() {
                     fullWidth
                     variant="outlined"
                   />
+                  
+                  {/* New fields */}
+                  <TextField
+                    label="Estado"
+                    name="estado"
+                    value={formData.estado}
+                    onChange={handleChange}
+                    select
+                    required
+                    fullWidth
+                    variant="outlined"
+                  >
+                    <MenuItem value="pendiente">Pendiente</MenuItem>
+                    <MenuItem value="en_progreso">En progreso</MenuItem>
+                    <MenuItem value="completada">Completada</MenuItem>
+                    <MenuItem value="cancelada">Cancelada</MenuItem>
+                  </TextField>
+
+                  {formData.estado === 'cancelada' && (
+                    <TextField
+                      label="Motivo de cancelación"
+                      name="motivo_no_evaluacion"
+                      value={formData.motivo_no_evaluacion}
+                      onChange={handleChange}
+                      required
+                      fullWidth
+                      multiline
+                      rows={3}
+                      variant="outlined"
+                    />
+                  )}
+
+                  {formData.estado === 'completada' && (
+                    <>
+                      <TextField
+                        label="Fecha realizada"
+                        name="fecha_realizada"
+                        value={formData.fecha_realizada.split('T')[0]}
+                        InputLabelProps={{ shrink: true }}
+                        disabled
+                        fullWidth
+                        variant="outlined"
+                      />
+                      <TextField 
+                        label="Resultado" 
+                        name="resultado" 
+                        value={formData.resultado} 
+                        onChange={handleChange} 
+                        fullWidth
+                        multiline 
+                        rows={4}
+                        variant="outlined"
+                        required
+                      />
+                    </>
+                  )}
                   <TextField 
                     label="Comentarios" 
                     name="comentarios" 
@@ -202,6 +290,7 @@ function CrearEvaluacion() {
                     fullWidth
                     variant="outlined"
                   />
+                  
                   <Button 
                     type="submit" 
                     variant="contained"
@@ -224,97 +313,27 @@ function CrearEvaluacion() {
                       }
                     }}
                   >
-                    Crear Evaluación
+                    {formData.estado === 'completada' ? 'Marcar como completada' : 'Actualizar evaluación'}
                   </Button>
                 </Box>
-              </Paper>
-    
-              <Paper elevation={3} sx={{ 
-                padding: 4, 
-                width: '100%',
-                maxWidth: { xs: '100%', md: '550px' },
-                maxHeight: { xs: '100%', md: '700px' },
-                backgroundColor: 'white',
-                borderRadius: 2,
-                display: 'flex',
-                flexDirection: 'column',
-                border: '1px solid var(--border-color)',
-                boxShadow: '0 4px 8px rgba(0, 0, 0, 0.1)',
-                transition: 'all 0.3s ease',
-                '&:hover': {
-                  boxShadow: '0 8px 16px rgba(0, 0, 0, 0.15)',
-                  transform: 'translateY(-4px)'
-                }
-              }}>
-                <Typography 
-                  variant="h5" 
-                  sx={{ 
-                    marginBottom: 3,
-                    color: 'var(--primary-color)',
-                    fontWeight: 'bold',
-                    borderBottom: '2px solid var(--primary-color)',
-                    paddingBottom: 2
-                  }}
-                >
-                  Ubicaciones Disponibles
-                </Typography>
-                <List sx={{ 
-                  flexGrow: 1,
-                  overflow: 'auto',
-                  minHeight: 0,
-                  borderRadius: 1,
-                  '& .MuiListItem-root': {
-                    padding: 2,
-                    transition: 'all 0.2s ease',
-                    '&:hover': {
-                      backgroundColor: 'rgba(var(--primary-rgb), 0.05)',
-                      transform: 'scale(1.01)',
-                      boxShadow: '0 2px 4px rgba(0, 0, 0, 0.05)'
-                    }
-                  }
-                }}>
-                  {ubicaciones.map((ubicacion) => (
-                    <ListItem 
-                      key={ubicacion.id || ubicacion.ubicacion_id}
-                      sx={{
-                        borderBottom: '1px solid var(--border-color)',
-                        '&:last-child': { borderBottom: 'none' },
-                        cursor: 'pointer'
-                      }}
-                    >
-                      <ListItemText 
-                        primary={ubicacion.nombre} 
-                        secondary={`ID: ${ubicacion.id || ubicacion.ubicacion_id}`}
-                        primaryTypographyProps={{ 
-                          fontWeight: 'medium',
-                          color: 'var(--text-primary)'
-                        }}
-                        secondaryTypographyProps={{
-                          color: 'var(--text-secondary)'
-                        }}
-                      />
-                    </ListItem>
-                  ))}
-                </List>
               </Paper>
             </Box>
           </Container>
         </Box>
       </Box>
+      
       <SuccessNotification
         open={notification.type === 'success' && notification.open}
         message={notification.message}
         onClose={handleCloseNotification}
-        sx={{ top: '80px' }}
       />
       <ErrorNotification
         open={notification.type === 'error' && notification.open}
         message={notification.message}
         onClose={handleCloseNotification}
-        sx={{ top: '80px' }}
       />
     </>
   );
 }
 
-export default CrearEvaluacion;
+export default EditarEvaluacion;
