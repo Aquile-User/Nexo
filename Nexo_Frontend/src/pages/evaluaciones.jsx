@@ -1,13 +1,16 @@
 import React, { useState, useEffect } from 'react';
 import { DataGrid } from '@mui/x-data-grid';
-import { Box, Chip, Typography, Paper, CircularProgress } from '@mui/material';
+import { Box, Chip, Typography, Paper, CircularProgress, Button, IconButton } from '@mui/material';
+import { Add as AddIcon } from '@mui/icons-material';
 import api from '../services/api';
 import '../styles/evaluaciones.css';
+import { useNavigate } from 'react-router-dom';
 
 function Evaluaciones() {
   const [evaluaciones, setEvaluaciones] = useState([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState(null);
+  const navigate = useNavigate();
 
   useEffect(() => {
     cargarEvaluaciones();
@@ -67,7 +70,9 @@ function Evaluaciones() {
       headerName: 'ID',
       width: 90,
       renderCell: (params) => (
-        <Typography>{params?.row?.evaluacion_id || '-'}</Typography>
+        <Typography sx={{ display: 'flex', alignItems: 'center', height: '100%' }}>
+          {params?.row?.evaluacion_id || '-'}
+        </Typography>
       )
     },
     {
@@ -162,9 +167,35 @@ function Evaluaciones() {
   return (
     <Box className="content-wrapper">
       <Paper elevation={3} className="evaluaciones-container">
-        <Typography variant="h4" component="h1" gutterBottom className="page-title">
-          Gestión de Evaluaciones
-        </Typography>
+        <Box className="page-title-container">
+          <Typography 
+            variant="h4" 
+            component="h1" 
+            className="page-title"
+            sx={{ textAlign: 'center', width: '100%', color: 'var(--primary-color)', marginBottom: 0 }}
+          >
+            Gestión de Evaluaciones
+          </Typography>
+          <IconButton 
+            aria-label="add evaluation" 
+            onClick={() => navigate('/crear-evaluacion')} // Navigate to the visit form page
+            sx={{ 
+              backgroundColor: 'var(--primary-color)', 
+              color: 'white', 
+              '&:hover': {
+                backgroundColor: 'rgba(25, 118, 210, 0.8)',
+              },
+              borderRadius: '50%',
+              width: 40,
+              height: 40,
+              display: 'flex',
+              alignItems: 'center',
+              justifyContent: 'center'
+            }}
+          >
+            <AddIcon />
+          </IconButton>
+        </Box>
         {error && (
           <Typography color="error" sx={{ mb: 2 }}>
             {error}
@@ -174,6 +205,12 @@ function Evaluaciones() {
           <DataGrid
             rows={evaluaciones}
             columns={columns}
+            sx={{
+              '& .MuiDataGrid-cell': {
+                display: 'flex',
+                alignItems: 'center'
+              }
+            }}
             initialState={{
               pagination: {
                 paginationModel: { page: 0, pageSize: 10 },

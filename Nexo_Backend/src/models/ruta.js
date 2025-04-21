@@ -5,9 +5,9 @@ const Ruta = sequelize.define(
   "Ruta",
   {
     ruta_id: {
-      type: DataTypes.BIGINT,
+      type: DataTypes.BIGINT, // Must match the type in RutaUbicacion
       primaryKey: true,
-      autoIncrement: true,
+      autoIncrement: true
     },
     nombre: {
       type: DataTypes.STRING(500),
