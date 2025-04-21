@@ -7,7 +7,7 @@ import Evaluaciones from './pages/evaluaciones';
 import InicioSesion from './pages/inicioSesion';
 import Perfil from './pages/perfil';
 import './App.css';
-import CrearVisita from './pages/CrearEvaluacion'; // Updated import
+import CrearEvaluacion from './pages/CrearEvaluacion'; // Changed import name
 
 function App() {
   const [sidebarOpen, setSidebarOpen] = useState(true);
@@ -43,7 +43,7 @@ function App() {
       <Routes>
         <Route path="/login" element={<InicioSesion />} />
         <Route path="/*" element={<ProtectedLayout />} />
-        <Route path="/crear-visita" element={<CrearVisita />} /> {/* Updated route */}
+        <Route path="/crear-evaluacion" element={<CrearEvaluacion />} /> {/* Updated path and component name */}
       </Routes>
     </Router>
   );

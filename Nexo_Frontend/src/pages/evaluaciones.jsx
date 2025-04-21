@@ -178,7 +178,7 @@ function Evaluaciones() {
           </Typography>
           <IconButton 
             aria-label="add evaluation" 
-            onClick={() => navigate('/crear-visita')} // Navigate to the visit form page
+            onClick={() => navigate('/crear-evaluacion')} // Navigate to the visit form page
             sx={{ 
               backgroundColor: 'var(--primary-color)', 
               color: 'white', 

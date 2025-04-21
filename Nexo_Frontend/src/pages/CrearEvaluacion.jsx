@@ -4,7 +4,7 @@ import api from '../services/api';
 import TopBar from '../components/TopBar'; // Add this import
 import SideBar from '../components/SideBar'; // Add this import
 
-function CrearVisita() {
+function CrearEvaluacion() {  // Changed component name
   const [formData, setFormData] = useState({
     ubicacion_id: '',
     fecha_programada: '',
@@ -45,20 +45,34 @@ function CrearVisita() {
     try {
       // Combine date and time before sending to API
       const fechaCompleta = formData.fecha_programada && formData.hora_programada
-        ? `${formData.fecha_programada}T${formData.hora_programada}`
+        ? `${formData.fecha_programada}T${formData.hora_programada}:00` // Added :00 for seconds
         : formData.fecha_programada;
-
+  
       const dataToSend = {
         ...formData,
         fecha_programada: fechaCompleta,
       };
       
-      delete dataToSend.hora_programada; // Remove the extra field before sending
-
-      await api.post('/evaluaciones', dataToSend);
-      alert('Visita creada exitosamente');
+      delete dataToSend.hora_programada;
+  
+      const response = await api.post('/evaluaciones', dataToSend);
+      
+      if (response.status === 201) {
+        alert('Evaluación creada exitosamente');
+        // Reset form after successful submission
+        setFormData({
+          ubicacion_id: '',
+          fecha_programada: '',
+          hora_programada: '',
+          tipo: '',
+          comentarios: ''
+        });
+      } else {
+        throw new Error('Error al crear la evaluación');
+      }
     } catch (error) {
-      alert('Error al crear la visita');
+      console.error('Error:', error);
+      alert(error.response?.data?.message || 'Error al crear la evaluación');
     }
   };
 
@@ -111,7 +125,7 @@ function CrearVisita() {
                   paddingBottom: 2
                 }}
               >
-                Crear Nueva Visita
+                Crear Evaluacion
               </Typography>
               <Box component="form" onSubmit={handleSubmit} sx={{ display: 'flex', flexDirection: 'column', gap: 3 }}>
                 <TextField 
@@ -188,7 +202,7 @@ function CrearVisita() {
                     }
                   }}
                 >
-                  Crear Visita
+                  Crear Evaluación
                 </Button>
               </Box>
             </Paper>
@@ -268,4 +282,4 @@ function CrearVisita() {
   );
 }
 
-export default CrearVisita;
+export default CrearEvaluacion;  // Changed export name
