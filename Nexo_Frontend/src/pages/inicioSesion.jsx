@@ -55,10 +55,24 @@ function SignIn() {
     if (validateForm()) {
       setIsLoading(true);
       try {
-        await authService.login(formData.email, formData.password);
-        window.location.href = '/dashboard';
+        const response = await authService.login(formData.email, formData.password);
+        console.log('Login response:', response);
+        
+        if (response && response.token) {
+          // Asegurarse de que el token y los datos del usuario se guarden correctamente
+          localStorage.setItem('user', JSON.stringify(response));
+          localStorage.setItem('token', response.token);
+          
+          // Redirigir al dashboard después de un inicio de sesión exitoso
+          navigate('/dashboard', { replace: true });
+        } else {
+          setErrors({ submit: 'Error: Respuesta del servidor inválida' });
+        }
       } catch (error) {
-        setErrors({ submit: error.message || 'Error al iniciar sesión. Por favor intenta de nuevo.' });
+        console.error('Login error:', error);
+        setErrors({ 
+          submit: error.response?.data?.message || error.message || 'Error al iniciar sesión. Por favor intenta de nuevo.' 
+        });
       } finally {
         setIsLoading(false);
       }

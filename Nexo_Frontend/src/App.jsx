@@ -3,6 +3,7 @@ import { BrowserRouter as Router, Routes, Route, Navigate } from 'react-router-d
 import { Box } from '@mui/material';
 import Sidebar from './components/Sidebar';
 import TopBar from './components/TopBar';
+import Dashboard from './pages/Dashboard';
 import Evaluaciones from './pages/evaluaciones';
 import InicioSesion from './pages/inicioSesion';
 import Perfil from './pages/perfil';
@@ -12,6 +13,8 @@ import EditarEvaluacion from './pages/EditarEvaluacion';
 import Usuarios from './pages/Usuarios';
 import CrearUsuario from './pages/CrearUsuario';
 import EditarUsuario from './pages/EditarUsuario';
+import CrearRuta from './pages/CrearRuta';
+import PrivateRoute from './components/PrivateRoute';
 
 function App() {
   const [sidebarOpen, setSidebarOpen] = useState(true);
@@ -32,7 +35,7 @@ function App() {
           <Box className="content-wrapper">
             <Routes>
               <Route path="/" element={<Navigate to="/dashboard" replace />} />
-              <Route path="/dashboard" element={<Navigate to="/evaluaciones" replace />} />
+              <Route path="/dashboard" element={<Dashboard />} />
               <Route path="/evaluaciones" element={<Evaluaciones />} />
               <Route path="/crear-evaluacion" element={<CrearEvaluacion />} />
               <Route path="/editar-evaluacion/:id" element={<EditarEvaluacion key={window.location.pathname} />} />
@@ -40,6 +43,14 @@ function App() {
               <Route path="/usuarios" element={<Usuarios />} />
               <Route path="/crear-usuario" element={<CrearUsuario />} />
               <Route path="/editar-usuario/:id" element={<EditarUsuario />} />
+              <Route
+                path="/crear-ruta"
+                element={
+                  <PrivateRoute>
+                    <CrearRuta />
+                  </PrivateRoute>
+                }
+              />
             </Routes>
           </Box>
         </Box>

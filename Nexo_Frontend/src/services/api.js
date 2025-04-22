@@ -1,7 +1,7 @@
 import axios from "axios";
 import authService from "./authService";
 
-const API_URL = "http://localhost:3000/api";
+const API_URL = "http://localhost:3000";
 
 const api = axios.create({
   baseURL: API_URL,
@@ -15,12 +15,17 @@ api.interceptors.request.use(
   (config) => {
     console.log("Enviando petición a:", config.url);
     console.log("Método:", config.method.toUpperCase());
-    console.log("Datos de la petición:", config.data);
 
     const user = authService.getCurrentUser();
     if (user && user.token) {
       config.headers.Authorization = `Bearer ${user.token}`;
       console.log("Token incluido en la petición");
+    } else {
+      console.log("No hay token disponible");
+      // Si la ruta requiere autenticación y no hay token, redirigir al login
+      if (!config.url.includes('/login')) {
+        authService.logout();
+      }
     }
     return config;
   },
@@ -46,10 +51,10 @@ api.interceptors.response.use(
       mensaje: error.message,
     });
 
-    if (error.response?.status === 401) {
+    // Si el error es de autenticación y no estamos en la página de login
+    if (error.response?.status === 401 && !error.config.url.includes('/login')) {
       console.log("Error de autenticación, cerrando sesión...");
       authService.logout();
-      window.location.href = "/login";
     }
     return Promise.reject(error);
   }

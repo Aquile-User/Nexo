@@ -43,45 +43,35 @@ function Sidebar({ isOpen, onClose }) {
   return (
     <Drawer
       variant="permanent"
-      className={`sidebar ${expanded ? 'open' : 'closed'}`}
+      className={`sidebar ${expanded ? 'expanded' : 'collapsed'}`}
       classes={{
-        paper: `sidebar-paper ${expanded ? 'open' : 'closed'}`,
+        paper: `sidebar ${expanded ? 'expanded' : 'collapsed'}`,
       }}
     >
       <Box className="sidebar-header">
-        <Typography variant="h6" className="sidebar-title">
-          Nexo
-        </Typography>
-        <IconButton
-          className="toggle-button"
-          onClick={toggleExpand}
-          size="small"
-        >
-          <img src={nexoLogo} alt="Nexo Logo" className="sidebar-logo-icon" />
-        </IconButton>
+        <Box className="logo-container">
+          <img src={nexoLogo} alt="Nexo Logo" className="logo" />
+          {expanded && <Typography variant="h6">Nexo</Typography>}
+        </Box>
       </Box>
+
       <Divider />
-      <List className="sidebar-list">
+
+      <List>
         {menuItems.map((item) => (
-          <Tooltip
+          <ListItem
+            button
             key={item.text}
-            title={!expanded ? item.text : ''}
-            placement="right"
-            arrow
+            component={Link}
+            to={item.path}
+            selected={location.pathname === item.path}
+            className={`menu-item ${location.pathname === item.path ? 'active' : ''}`}
           >
-            <ListItem
-              component={Link}
-              to={item.path}
-              className={`sidebar-item ${location.pathname === item.path ? 'active' : ''}`}
-            >
-              <ListItemIcon className="sidebar-icon">{item.icon}</ListItemIcon>
-              <ListItemText
-                primary={item.text}
-                className="sidebar-text"
-                sx={{ opacity: expanded ? 1 : 0 }}
-              />
-            </ListItem>
-          </Tooltip>
+            <Tooltip title={expanded ? '' : item.text} placement="right">
+              <ListItemIcon className="menu-icon">{item.icon}</ListItemIcon>
+            </Tooltip>
+            {expanded && <ListItemText primary={item.text} />}
+          </ListItem>
         ))}
       </List>
     </Drawer>
