@@ -1,5 +1,5 @@
 const { DataTypes } = require("sequelize");
-const sequelize = require("../config/database"); // Asegúrate de tener configurado tu archivo de conexión.
+const sequelize = require("../config/database");
 const Rol = require("./rol");
 
 const Usuario = sequelize.define(
@@ -42,7 +42,7 @@ const Usuario = sequelize.define(
   }
 );
 
-Usuario.belongsTo(Rol, { foreignKey: 'rol_id', as: 'rol' });
-Rol.hasMany(Usuario, { foreignKey: 'rol_id' });
+// Definir la relación con el rol
+Usuario.belongsTo(Rol, { foreignKey: "rol_id", as: "rol" });
 
 module.exports = Usuario;
