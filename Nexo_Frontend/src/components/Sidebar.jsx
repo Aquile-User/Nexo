@@ -33,8 +33,11 @@ function Sidebar({ isOpen, onClose }) {
   const [expanded, setExpanded] = useState(true);
 
   const toggleExpand = () => {
-    setExpanded(!expanded);
-    onClose(!expanded);
+    const newExpandedState = !expanded;
+    setExpanded(newExpandedState);
+    if (typeof onClose === 'function') {
+      onClose();
+    }
   };
 
   return (
@@ -67,7 +70,6 @@ function Sidebar({ isOpen, onClose }) {
             arrow
           >
             <ListItem
-              button
               component={Link}
               to={item.path}
               className={`sidebar-item ${location.pathname === item.path ? 'active' : ''}`}
@@ -86,4 +88,4 @@ function Sidebar({ isOpen, onClose }) {
   );
 }
 
-export default Sidebar; 
+export default Sidebar;

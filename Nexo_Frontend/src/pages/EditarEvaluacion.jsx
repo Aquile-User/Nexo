@@ -28,20 +28,55 @@ function EditarEvaluacion() {
     type: ''
   });
 
+  // Resetear el formulario cuando cambia el ID
+  useEffect(() => {
+    setFormData({
+      ubicacion_id: '',
+      fecha_programada: '',
+      hora_programada: '',
+      tipo: '',
+      comentarios: '',
+      resultado: '',
+      estado: 'pendiente',
+      motivo_no_evaluacion: '',
+      fecha_realizada: ''
+    });
+  }, [id]);
+
   useEffect(() => {
     const fetchEvaluacion = async () => {
       try {
+        console.log(`Obteniendo evaluación con ID: ${id}`);
         const response = await api.get(`/evaluaciones/${id}`);
-        const data = response.data;
-        
-        // Verificamos si es un array y tomamos el primer elemento
-        const evaluacion = Array.isArray(data) ? data[0] : data;
-        console.log('Datos de evaluación:', evaluacion); // Debug log
+        const evaluacion = response.data;
+
+        console.log('Datos de evaluación recibidos:', evaluacion); // Debug log
+
+        if (!evaluacion || typeof evaluacion !== 'object') {
+          console.error('Datos de evaluación inválidos:', evaluacion);
+          setNotification({
+            open: true,
+            message: 'Error: Datos de evaluación no válidos',
+            type: 'error'
+          });
+          return;
+        }
+
+        // Verificar que el ID coincida con el solicitado
+        if (evaluacion.evaluacion_id !== parseInt(id)) {
+          console.error(`Error: ID de evaluación no coincide. Esperado: ${id}, Recibido: ${evaluacion.evaluacion_id}`);
+          setNotification({
+            open: true,
+            message: `Error: La evaluación recibida (ID: ${evaluacion.evaluacion_id}) no coincide con la solicitada (ID: ${id})`,
+            type: 'error'
+          });
+          return;
+        }
 
         // Parse date and time if they exist
         const fechaProgramada = evaluacion.fecha_programada ? evaluacion.fecha_programada.split('T')[0] : '';
         const horaProgramada = evaluacion.fecha_programada ? evaluacion.fecha_programada.split('T')[1].substring(0, 5) : '';
-        
+
         const newFormData = {
           ubicacion_id: evaluacion.ubicacion_id || '',
           fecha_programada: fechaProgramada,
@@ -51,33 +86,35 @@ function EditarEvaluacion() {
           resultado: evaluacion.resultado || '',
           estado: evaluacion.estado || 'pendiente',
           motivo_no_evaluacion: evaluacion.motivo_no_evaluacion || '',
-          fecha_realizada: evaluacion.fecha_realizada || ''
+          fecha_realizada: evaluacion.fecha_realizada ? evaluacion.fecha_realizada : ''
         };
 
-        console.log('Datos asignados al formulario:', newFormData); // Debug log
+        console.log(`Datos asignados al formulario para evaluación ${id}:`, newFormData); // Debug log mejorado
         setFormData(newFormData);
       } catch (error) {
         console.error('Error al obtener evaluación:', error);
         setNotification({
           open: true,
-          message: 'Error al cargar la evaluación',
+          message: 'Error al cargar la evaluación: ' + (error.response?.data?.error || error.message),
           type: 'error'
         });
       }
     };
-  
-    fetchEvaluacion();
-  }, [id]);
+
+    if (id) {
+      fetchEvaluacion(); // Ejecutar la función para cargar los datos
+    }
+  }, [id]); // Añadimos id como dependencia para que se actualice cuando cambie
 
   const handleChange = (e) => {
     const { name, value } = e.target;
-    
+
     // If state changes to completed, set current date/time
     if (name === 'estado' && value === 'completada') {
       const now = new Date();
       const fecha = now.toISOString().split('T')[0];
       const hora = now.toTimeString().substring(0, 5);
-      
+
       setFormData(prev => ({
         ...prev,
         [name]: value,
@@ -94,22 +131,22 @@ function EditarEvaluacion() {
       const fechaCompleta = formData.fecha_programada && formData.hora_programada
         ? `${formData.fecha_programada}T${formData.hora_programada}:00`
         : formData.fecha_programada;
-  
+
       const dataToSend = {
         ...formData,
         fecha_programada: fechaCompleta,
       };
-      
+
       delete dataToSend.hora_programada;
-  
+
       const response = await api.put(`/evaluaciones/${id}`, dataToSend);
-      
+
       setNotification({
         open: true,
         message: response.data.mensaje || 'Evaluación actualizada exitosamente',
         type: 'success'
       });
-      
+
       setTimeout(() => {
         navigate('/evaluaciones');
       }, 1500);
@@ -132,23 +169,23 @@ function EditarEvaluacion() {
         <SideBar />
         <Box component="main" sx={{ flexGrow: 1, p: 3 }}>
           <TopBar />
-          <Container maxWidth="lg" sx={{ 
-            py: 4, 
+          <Container maxWidth="lg" sx={{
+            py: 4,
             mt: 6, // Changed from mt: 8 to mt: 6 to move it up more
             display: 'flex',
             flexDirection: 'column',
             justifyContent: 'center',
             minHeight: 'calc(100vh - 128px)'
           }}>
-            <Box sx={{ 
-              display: 'flex', 
+            <Box sx={{
+              display: 'flex',
               flexDirection: { xs: 'column', md: 'row' },
               gap: 3,
               justifyContent: 'center',
               alignItems: 'center',
             }}>
-              <Paper elevation={3} sx={{ 
-                padding: 4, 
+              <Paper elevation={3} sx={{
+                padding: 4,
                 width: '100%',
                 maxWidth: { xs: '100%', md: '550px' },
                 background: 'linear-gradient(135deg, var(--gradient-start) 0%, var(--gradient-end) 100%)',
@@ -163,12 +200,12 @@ function EditarEvaluacion() {
                   transform: 'translateY(-4px)'
                 }
               }}>
-                <Typography 
-                  variant="h4" 
-                  component="h1" 
-                  sx={{ 
-                    marginBottom: 4, 
-                    textAlign: 'center', 
+                <Typography
+                  variant="h4"
+                  component="h1"
+                  sx={{
+                    marginBottom: 4,
+                    textAlign: 'center',
                     color: 'var(--primary-color)',
                     fontWeight: 'bold',
                     borderBottom: '2px solid var(--primary-color)',
@@ -177,54 +214,54 @@ function EditarEvaluacion() {
                 >
                   Editar Evaluación
                 </Typography>
-                
+
                 <Box component="form" onSubmit={handleSubmit} sx={{ display: 'flex', flexDirection: 'column', gap: 3 }}>
                   {/* Existing fields from CrearEvaluacion */}
-                  <TextField 
-                    label="Ubicación ID" 
-                    name="ubicacion_id" 
-                    value={formData.ubicacion_id} 
-                    onChange={handleChange} 
-                    required 
+                  <TextField
+                    label="Ubicación ID"
+                    name="ubicacion_id"
+                    value={formData.ubicacion_id}
+                    onChange={handleChange}
+                    required
                     fullWidth
                     variant="outlined"
                   />
-                  
+
                   <Box sx={{ display: 'flex', gap: 2, flexDirection: { xs: 'column', sm: 'row' } }}>
-                    <TextField 
-                      label="Fecha Programada" 
-                      name="fecha_programada" 
-                      type="date" 
-                      value={formData.fecha_programada} 
-                      onChange={handleChange} 
-                      required 
-                      InputLabelProps={{ shrink: true }} 
+                    <TextField
+                      label="Fecha Programada"
+                      name="fecha_programada"
+                      type="date"
+                      value={formData.fecha_programada}
+                      onChange={handleChange}
+                      required
+                      InputLabelProps={{ shrink: true }}
                       fullWidth
                       variant="outlined"
                     />
-                    <TextField 
-                      label="Hora Programada" 
-                      name="hora_programada" 
-                      type="time" 
-                      value={formData.hora_programada} 
-                      onChange={handleChange} 
-                      required 
-                      InputLabelProps={{ shrink: true }} 
+                    <TextField
+                      label="Hora Programada"
+                      name="hora_programada"
+                      type="time"
+                      value={formData.hora_programada}
+                      onChange={handleChange}
+                      required
+                      InputLabelProps={{ shrink: true }}
                       fullWidth
                       variant="outlined"
                     />
                   </Box>
-                  
-                  <TextField 
-                    label="Tipo" 
-                    name="tipo" 
-                    value={formData.tipo} 
-                    onChange={handleChange} 
-                    required 
+
+                  <TextField
+                    label="Tipo"
+                    name="tipo"
+                    value={formData.tipo}
+                    onChange={handleChange}
+                    required
                     fullWidth
                     variant="outlined"
                   />
-                  
+
                   {/* New fields */}
                   <TextField
                     label="Estado"
@@ -267,34 +304,34 @@ function EditarEvaluacion() {
                         fullWidth
                         variant="outlined"
                       />
-                      <TextField 
-                        label="Resultado" 
-                        name="resultado" 
-                        value={formData.resultado} 
-                        onChange={handleChange} 
+                      <TextField
+                        label="Resultado"
+                        name="resultado"
+                        value={formData.resultado}
+                        onChange={handleChange}
                         fullWidth
-                        multiline 
+                        multiline
                         rows={4}
                         variant="outlined"
                         required
                       />
                     </>
                   )}
-                  <TextField 
-                    label="Comentarios" 
-                    name="comentarios" 
-                    value={formData.comentarios} 
-                    onChange={handleChange} 
-                    multiline 
-                    rows={4} 
+                  <TextField
+                    label="Comentarios"
+                    name="comentarios"
+                    value={formData.comentarios}
+                    onChange={handleChange}
+                    multiline
+                    rows={4}
                     fullWidth
                     variant="outlined"
                   />
-                  
-                  <Button 
-                    type="submit" 
+
+                  <Button
+                    type="submit"
                     variant="contained"
-                    sx={{ 
+                    sx={{
                       marginTop: 2,
                       py: 1.5,
                       px: 4,
@@ -321,7 +358,7 @@ function EditarEvaluacion() {
           </Container>
         </Box>
       </Box>
-      
+
       <SuccessNotification
         open={notification.type === 'success' && notification.open}
         message={notification.message}
